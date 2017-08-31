@@ -4,7 +4,7 @@
 
 源码裁剪方案：
 
-`grunt custom:-ajax,-deprecated,-effects,-event/alias,-wrap`
+`grunt custom:-ajax,-deprecated,-effects,-event/alias,-wrap,-exports/global`
 
 ## zepto.min.js
 
