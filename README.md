@@ -13,23 +13,28 @@
     <script src="//path/to/mine.js" charset="utf-8"></script>
     <script type="text/javascript">
         Mine.config({
+            /* The default attribute that stores the statistic (stat, for short) data. */
             defaultDataAttr: 'stat-data',
+
+            /* Each stat key and its options */
             'stat-key1': {
-                type: 'click',
+                type: 'click', /* The behavior type, such as 'click', 'view', 'load'. */
                 data: function (node) {
                     return {
                         url: node.getAttribute('href')
                     };
-                } /* If not defined, it would be got from the key attribute's value and the default data attribute's value. */
+                } /* If not defined, the stat data would be got from the key attribute's value and the default data attribute's value. */
             },
             'stat-key2': {
                 type: 'view',
-                once: false,
-                whole: false
+                once: false, /* If one time is enough. */
+                whole: false /* If the whole area should be viewed. */
             },
             'stat-key3': {
                 type: 'load'
             },
+
+            /* Specify the way to send stat requests. */
             sendBy: {
                 type: 'image',
                 url: function () {}, /* String or Function */
