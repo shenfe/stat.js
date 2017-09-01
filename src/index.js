@@ -9,33 +9,93 @@ function select(sel) {
 }
 
 var CONF = {
+    typeAttrEnum: {
+        'stat-click': true,
+        'stat-view': true,
+        'stat-load': true
+    },
+    typeAttrPrefix: 'stat-',
+    defaultCodeAttr: 'stat-code',
     defaultDataAttr: 'stat-data',
-    defaultDataParamName: 'stat_data',
+    defaultTypeParamInUrl: 'stat_type',
+    defaultCodeParamInUrl: 'stat_code',
+    defaultDataParamInUrl: 'stat_data',
     send: function () {},
-    statKeys: {}
+    codeOptions: {}
 };
 
-function queryStringifyData(data, paramName) {
-    function parseData(data) {
-        var r = null;
-        try {
-            r = JSON.parse(data);
-        } catch (e) {
-            r = data;
+/**
+ * [parseDataFromString description]
+ * @param  {String} str [description]
+ * @return {Object}     [description]
+ */
+function parseDataFromString(str) {
+    var r = null;
+    try {
+        r = JSON.parse(str);
+    } catch (e) {
+        r = str;
+    }
+    return r;
+}
+
+/**
+ * [setCommonData description]
+ * @param {Object} data [description]
+ */
+function setCommonData(data) {
+    data.time = (new Date()).getTime();
+}
+
+/**
+ * [getDataOfNode description]
+ * @param  {Node} el    [description]
+ * @return {Object}     [description]
+ */
+function getDataOfNode(el) {
+    var data = el.getAttribute(CONF.defaultDataAttr);
+    if (data != null) {
+        data = parseDataFromString(data);
+        if (!Util.isObject(data)) {
+            var t = String(data);
+            data = {};
+            data[CONF.defaultDataParamInUrl] = t;
         }
-        return r;
+    } else {
+        data = {};
+        Util.each(el.attributes, function (attr) {
+            var name = attr.name, value = attr.value;
+            if (name.startsWith(CONF.defaultDataAttr + '-')) { // param data
+                data[name.substr(CONF.defaultDataAttr.length + 1)] = value;
+            } else if (CONF.typeAttrEnum[name]) { // type
+                data[CONF.defaultTypeParamInUrl] = name.substr(CONF.typeAttrPrefix.length);
+            } else if (name === CONF.defaultCodeAttr) { // code
+                data[CONF.defaultCodeParamInUrl] = value;
+            }
+        });
     }
-    function queryParamStringifyData(data) {
-        if (Util.isBasic(data)) return encodeURIComponent(String(data));
-        return encodeURIComponent(JSON.stringify(data));
-    }
-    data = parseData(data);
-    if (!Util.isObject(data)) {
-        if (typeof paramName !== 'string') paramName = CONF.defaultDataParamName;
-        return queryParamStringifyData(paramName) + '=' + queryParamStringifyData(data);
-    }
+    return data;
+}
+
+/**
+ * [queryParamStringifyData description]
+ * @param  {?} data      [description]
+ * @return {String}      [description]
+ */
+function queryParamStringifyData(data) {
+    if (data == null) return '';
+    if (Util.isBasic(data)) return encodeURIComponent(String(data));
+    return encodeURIComponent(JSON.stringify(data));
+}
+
+/**
+ * [queryStringifyObject description]
+ * @param  {Object} obj [description]
+ * @return {String}     [description]
+ */
+function queryStringifyObject(obj) {
     var r = [];
-    Util.each(data, function (v, p) {
+    Util.each(obj, function (v, p) {
         r.push(queryParamStringifyData(p) + '=' + queryParamStringifyData(v));
     });
     return r.join('&');
