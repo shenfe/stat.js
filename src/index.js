@@ -10,28 +10,30 @@ function select(sel) {
 
 var CONF = {
     defaultDataAttr: 'stat-data',
+    defaultDataParamName: 'stat_data',
     send: function () {},
     statKeys: {}
 };
 
-function parseData(data) {
-    var r = null;
-    try {
-        r = JSON.parse(data);
-    } catch (e) {
-        r = data;
+function queryStringifyData(data, paramName) {
+    function parseData(data) {
+        var r = null;
+        try {
+            r = JSON.parse(data);
+        } catch (e) {
+            r = data;
+        }
+        return r;
     }
-    return r;
-}
-
-function queryParamStringifyData(data) {
-    if (Util.isBasic(data)) return encodeURIComponent(String(data));
-    return encodeURIComponent(JSON.stringify(data));
-}
-
-function queryStringifyData(data, defaultDataParamName) {
-    if (typeof defaultDataParamName !== 'string') defaultDataParamName = 'stat_data';
-    if (!Util.isObject(data)) return defaultDataParamName + '=' + queryParamStringifyData(data);
+    function queryParamStringifyData(data) {
+        if (Util.isBasic(data)) return encodeURIComponent(String(data));
+        return encodeURIComponent(JSON.stringify(data));
+    }
+    data = parseData(data);
+    if (!Util.isObject(data)) {
+        if (typeof paramName !== 'string') paramName = CONF.defaultDataParamName;
+        return queryParamStringifyData(paramName) + '=' + queryParamStringifyData(data);
+    }
     var r = [];
     Util.each(data, function (v, p) {
         r.push(queryParamStringifyData(p) + '=' + queryParamStringifyData(v));
