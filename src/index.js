@@ -123,6 +123,12 @@ function loadScript(url, callback) {
     (document.getElementsByTagName('head')[0] || document.body).appendChild(script);
 }
 
+/**
+ * [loadImage description]
+ * @param  {String}   url      [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
 function loadImage(url, callback) {
     var img = new Image();
     img.src = url;
@@ -157,6 +163,11 @@ var CONF = {
     });
 })();
 
+/**
+ * [description]
+ * @param  {Object} conf [description]
+ * @return {[type]}      [description]
+ */
 var config = function (conf) {
     if (!Util.isObject(conf)) return false;
     Util.each(conf, function (v, p) {
@@ -168,11 +179,80 @@ var config = function (conf) {
     });
 };
 
-var bind = function () {};
+/**
+ * [bindDataToNode description]
+ * @param  {Node} el     [description]
+ * @param  {Object|String} data [description]
+ * @return {[type]}      [description]
+ */
+function bindDataToNode(el, data) {
+    if (Util.isString(data)) {
+        $(el).attr(CONF.defaultDataAttr, data);
+    } else if (Util.isObject(data)) {
+        Util.each(data, function (v, p) {
+            $(el).attr(CONF.defaultDataAttr + '-' + p, v == null ? ''
+                : (Util.isBasic(v) ? String(v) : JSON.stringify(v)));
+        });
+    }
+}
 
-var unbind = function () {};
+/**
+ * [description]
+ * @param  {Node} el                  [description]
+ * @param  {String|Array|Object} type [description]
+ * @param  {Object|Undefined} obj     [description]
+ * @return {[type]}                   [description]
+ */
+var bind = function (el, type, obj) {
+    if (Util.isObject(obj)) bindDataToNode(el, obj);
+    if (Util.isObject(type)) {
+        bindDataToNode(el, type);
+    } else if (Util.isString(type)) {
+        if (type === 'all') {
+            Util.each(CONF.typeEnum, function (v, p) {
+                bind(el, p);
+            });
+        } else if (CONF.typeEnum[type]) {
+            $(el).attr(CONF.eventToType[type], '');
+        }
+    } else if (Util.isArray(type)) {
+        Util.each(type, function (v) {
+            bind(el, v);
+        });
+    }
+};
 
-var check = function () {};
+/**
+ * [description]
+ * @param  {Node} el               [description]
+ * @param  {String|Undefined} type [description]
+ * @return {[type]}                [description]
+ */
+var unbind = function (el, type) {
+    if (!type || type === 'all') {
+        Util.each(CONF.typeEnum, function (v, p) {
+            unbind(el, p);
+        });
+    } else if (CONF.typeEnum[type]) {
+        $(el).removeAttr(CONF.eventToType[type]);
+    }
+};
+
+/**
+ * [description]
+ * @param  {Node} el   [description]
+ * @return {[type]}    [description]
+ */
+var check = function (el) {
+    var r = {};
+    var $el = $(el);
+    Util.each(CONF.typeEnum, function (v, type) {
+        if ($el.attr(CONF.eventToType[type]) == null) {
+            r[type] = false;
+        }
+    });
+    return r;
+};
 
 /**
  * [description]

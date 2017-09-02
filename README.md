@@ -59,7 +59,7 @@
 
             $target.addEventListener('click', function (e) {
                 var bindingStatus = Mine.check(this);
-                if (bindingStatus['click']) {
+                if (bindingStatus.click) {
                     Mine.unbind(this, 'click');
                 }
             }, false);
