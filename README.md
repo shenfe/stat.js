@@ -6,33 +6,32 @@
 
 ```html
 <body>
-    <a stat-key1="{...}" href="javascript:void(0);">click this</a>
-    <div stat-key2="{...}">view this</div>
-    <a stat-key1 stat-key2 stat-data="{...}" href="javascript:void(0);">click or view this</a>
-    <a id="test" class="some-class" some-data="..." href="javascript:void(0);">click this</a>
+    <a stat-click stat-code="key1" stat-data="{...}" href="javascript:void(0);">click this</a>
+    <div stat-view stat-code="key2" stat-data="{...}">view this</div>
+    <a stat-click stat-view stat-code="key3" stat-data="{...}" href="javascript:void(0);">click or view this</a>
+    <a id="test" href="javascript:void(0);">click this</a>
     <script src="//path/to/mine.js" charset="utf-8"></script>
     <script type="text/javascript">
         Mine.config({
             /* The default attribute that stores the statistic (stat, for short) data. */
             defaultDataAttr: 'stat-data',
+            /* The default attribute that stores the stat code which represents a unique stat object. */
+            defaultCodeAttr: 'stat-code',
 
             /* Each stat key and its options */
-            'stat-key1': {
-                type: 'click', /* The behavior type, such as 'click', 'view', 'load'. */
+            'key1': {
                 data: function (node) {
                     return {
                         url: node.getAttribute('href')
                     };
                 } /* If not defined, the stat data would be got from the key attribute's value and the default data attribute's value. */
             },
-            'stat-key2': {
-                type: 'view',
-                once: false, /* If one time is enough. */
-                whole: false /* If the whole area should be viewed. */
-            },
-            'stat-key3': {
-                type: 'load'
-            },
+            'key2': {
+                view: {
+                    once: false, /* If one time is enough. */
+                    whole: false /* If the whole area should be viewed. */
+                }
+            }
 
             /* Specify the way to send stat requests. */
             sendBy: {
@@ -48,27 +47,24 @@
         window.onload = function () {
             var $target = document.getElementById('test');
 
-            Mine.bind({
-                target: $target,
-                key: 'stat-key1',
-                dataStr: $target.getAttribute('some-data')
+            Mine.bind($target, 'click', {
+                code: 'key1',
+                data: (function (el) {
+                    return {
+                        url: el.href,
+                        text: el.innerText
+                    };
+                })($target)
             });
 
             $target.addEventListener('click', function (e) {
                 var bindingStatus = Mine.check(this);
-                if (bindingStatus['stat-key1']) {
-                    Mine.unbind({
-                        target: this,
-                        key: 'all' /* If `all`, all bound keys would be unbound from the target. */
-                    });
+                if (bindingStatus['click']) {
+                    Mine.unbind(this, 'click');
                 }
             }, false);
 
-            Mine.send({
-                target: $target, /* If not defined, define `data`. */
-                key: 'stat-key3',
-                data: { /**/ } /* If not defined, define `target`. */
-            });
+            Mine.send('load', $target);
         };
     </script>
 </body>
