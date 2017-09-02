@@ -1,8 +1,8 @@
 module.exports = {
     input: 'src/index.js',
-    name: 'Mine',
+    name: 'Stat',
     output: {
-        file: 'temp/mine.js',
+        file: 'temp/stat.js',
         format: 'umd'
     },
     globals: {
