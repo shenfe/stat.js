@@ -10,30 +10,30 @@
     <div stat-view stat-code="key2" stat-data="{...}">view this</div>
     <a stat-click stat-view stat-code="key3" stat-data="{...}" href="javascript:void(0);">click or view this</a>
     <a id="test" href="javascript:void(0);">click this</a>
-    <script src="//path/to/mine.js" charset="utf-8"></script>
+    <script src="//path/to/stat.js" charset="utf-8"></script>
     <script type="text/javascript">
-        Mine.config({
-            /* The default attribute that stores the statistic (stat, for short) data. */
+        Stat.config({
+            /* The default attribute that stores the statistic (stat, for short) data */
             defaultDataAttr: 'stat-data',
-            /* The default attribute that stores the stat code which represents a unique stat object. */
+            /* The default attribute that stores the stat code which represents a unique stat object */
             defaultCodeAttr: 'stat-code',
 
-            /* Each stat key and its options */
+            /* Each stat code and its options */
             'key1': {
                 data: function (node) {
                     return {
                         url: node.getAttribute('href')
                     };
-                } /* If not defined, the stat data would be got from the key attribute's value and the default data attribute's value. */
+                }
             },
             'key2': {
                 view: {
-                    once: false, /* If one time is enough. */
-                    whole: false /* If the whole area should be viewed. */
+                    once: false, /* If one time is enough */
+                    whole: false /* If the whole area should be viewed */
                 }
             }
 
-            /* Specify the way to send stat requests. */
+            /* Specify the way to send stat requests */
             sendBy: {
                 type: 'image',
                 url: function () {}, /* String or Function */
@@ -47,7 +47,7 @@
         window.onload = function () {
             var $target = document.getElementById('test');
 
-            Mine.bind($target, 'click', {
+            Stat.bind($target, 'click', {
                 code: 'key1',
                 data: (function (el) {
                     return {
@@ -58,13 +58,13 @@
             });
 
             $target.addEventListener('click', function (e) {
-                var bindingStatus = Mine.check(this);
+                var bindingStatus = Stat.check(this);
                 if (bindingStatus.click) {
-                    Mine.unbind(this, 'click');
+                    Stat.unbind(this, 'click');
                 }
             }, false);
 
-            Mine.send('load', $target);
+            Stat.send('load', $target);
         };
     </script>
 </body>
