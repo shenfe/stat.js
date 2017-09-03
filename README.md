@@ -110,6 +110,17 @@ Stat.send('view', {
     }
 });
 ```
+## Build
+
+stat.js依赖jQuery或Zepto，但可以选择是否将jQuery或Zepto打包进代码中。
+
+```bash
+npm run build               # 默认包含jQuery
+npm run build:jquery-in     # 包含jQuery
+npm run build:jquery-out    # 不包含jQuery
+npm run build:zepto-in      # 包含Zepto
+npm run build:zepto-out     # 不包含Zepto
+```
 
 ## License
 
