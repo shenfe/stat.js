@@ -1,6 +1,231 @@
-import './Polyfill'
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.Stat = {})));
+}(this, (function (exports) { 'use strict';
 
-import * as Util from './Util'
+var isNumber = function (v) {
+    return typeof v === 'number';
+};
+
+var isNumeric = function (v) {
+    var n = parseInt(v);
+    if (isNaN(n)) return false;
+    return (typeof v === 'number' || typeof v === 'string') && n == v;
+};
+
+var isString = function (v) {
+    return typeof v === 'string';
+};
+
+var isFunction = function (v) {
+    return typeof v === 'function';
+};
+
+var isObject = function (v) {
+    return Object.prototype.toString.call(v) === '[object Object]';
+};
+
+var isArray = function (v) {
+    return Object.prototype.toString.call(v) === '[object Array]';
+};
+
+var isBasic = function (v) {
+    return v == null
+        || typeof v === 'boolean'
+        || typeof v === 'number'
+        || typeof v === 'string'
+        || typeof v === 'function';
+};
+
+var isNode = function (v) {
+    if (typeof Node !== 'function') return false;
+    return v instanceof Node;
+};
+
+var isNamedNodeMap = function (v) {
+    return v instanceof NamedNodeMap;
+};
+
+var each = function (v, func, arrayReverse) {
+    if (isObject(v)) {
+        for (var p in v) {
+            if (!v.hasOwnProperty(p)) continue;
+            var r = func(v[p], p);
+            if (r === false) break;
+        }
+    } else if (isArray(v)) {
+        if (!arrayReverse) {
+            for (var i = 0, len = v.length; i < len; i++) {
+                var r = func(v[i], i);
+                if (r === false) break;
+            }
+        } else {
+            for (var i = v.length - 1; i >= 0; i--) {
+                var r = func(v[i], i);
+                if (r === false) break;
+            }
+        }
+    } else if (isNode(v)) {
+        var ret = false;
+        switch (v.nodeType) {
+            case Node.ELEMENT_NODE:
+                break;
+            case Node.TEXT_NODE:
+            case Node.COMMENT_NODE:
+            case Node.PROCESSING_INSTRUCTION_NODE:
+            case Node.DOCUMENT_NODE:
+            case Node.DOCUMENT_TYPE_NODE:
+            case Node.DOCUMENT_FRAGMENT_NODE:
+            default:
+                ret = true;
+        }
+        if (ret) return;
+        for (var i = 0, childNodes = v.childNodes, len = v.childNodes.length; i < len; i++) {
+            func(childNodes[i]);
+            each(childNodes[i], func);
+        }
+    } else if (isNamedNodeMap(v)) {
+        for (var i = 0, len = v.length; i < len; i++) {
+            var r = func(v[i]['nodeValue'], v[i]['nodeName']);
+            if (r === false) break;
+        }
+    } else if (Util.isFunction(v.forEach)) {
+        v.forEach(func);
+    }
+};
+
+var clone = function (val) {
+    var r = val;
+    if (isObject(val)) {
+        r = {};
+        each(val, function (v, p) {
+            r[p] = clone(v);
+        });
+    } else if (isArray(val)) {
+        r = [];
+        each(val, function (v) {
+            r.push(clone(v));
+        });
+    }
+    return r;
+};
+
+var hasProperty = function (val, p) {
+    if (isObject(val)) {
+        return val.hasOwnProperty(p);
+    } else if (isArray(val)) {
+        var n = parseInt(p);
+        return isNumeric(p) && val.length > n && n >= 0;
+    }
+    return false;
+};
+
+var clear = function (val, p, withBasicVal) {
+    var inRef = isString(p) || isNumber(p);
+    var target = inRef ? val[p] : val;
+
+    if (isObject(target) || isArray(target)) {
+        each(target, function (v, p) {
+            clear(target, p);
+        });
+        if (isArray(target)) {
+            shrinkArray(target);
+        }
+    }
+
+    if (inRef) {
+        val[p] = withBasicVal;
+    }
+};
+
+var shrinkArray = function (arr, len) {
+    var limited = isNumber(len);
+    if (!limited) {
+        each(arr, function (v, i) {
+            if (v === undefined) arr.length--;
+        }, true);
+    } else {
+        each(arr, function (v, i) {
+            if (i >= len) arr.length--;
+            else return false;
+        }, true);
+        while (arr.length < len) {
+            arr.push(null);
+        }
+    }
+    return arr;
+};
+
+var extend = function (dest, srcs, clean) {
+    if (!isObject(dest)) return null;
+    var args = Array.prototype.slice.call(arguments, 1,
+        arguments[arguments.length - 1] === true ? (arguments.length - 1) : arguments.length);
+
+    function extendObj(obj, src, clean) {
+        if (!isObject(src)) return;
+        each(src, function (v, p) {
+            if (!hasProperty(obj, p) || isBasic(v)) {
+                if (obj[p] !== v) {
+                    obj[p] = clone(v);
+                }
+            } else {
+                extendObj(obj[p], v, clean);
+            }
+        });
+        if (clean) {
+            each(obj, function (v, p) {
+                if (!hasProperty(src, p)) {
+                    clear(obj, p);
+                }
+            });
+            if (isArray(obj)) {
+                shrinkArray(obj);
+            }
+        }
+    }
+
+    each(args, function (src) {
+        extendObj(dest, src, clean);
+    });
+    return dest;
+};
+
+/**
+ * throttle节流函数
+ * @refer https://stackoverflow.com/a/27078401
+ */
+function throttle(func, wait, options) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    if (!options) options = {};
+    var later = function () {
+        previous = options.leading === false ? 0 : Date.now();
+        timeout = null;
+        result = func.apply(context, args);
+        if (!timeout) context = args = null;
+    };
+    return function () {
+        var now = Date.now();
+        if (!previous && options.leading === false) previous = now;
+        var remaining = wait - (now - previous);
+        context = this;
+        args = arguments;
+        if (remaining <= 0 || remaining > wait) {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            previous = now;
+            result = func.apply(context, args);
+            if (!timeout) context = args = null;
+        } else if (!timeout && options.trailing !== false) {
+            timeout = setTimeout(later, remaining);
+        }
+        return result;
+    };
+}
 
 /**
  * [parseDataFromString description]
@@ -39,13 +264,13 @@ function getDataOfNode(el) {
         var codeConf = CONF.codeOptions[code];
         if (codeConf) {
             var extraData;
-            if (Util.isFunction(codeConf.data)) {
+            if (isFunction(codeConf.data)) {
                 extraData = codeConf.data.call(el, el);
-            } else if (Util.isObject(codeConf.data)) {
+            } else if (isObject(codeConf.data)) {
                 extraData = codeConf.data;
             }
-            if (Util.isObject(extraData)) {
-                Util.extend(data, extraData);
+            if (isObject(extraData)) {
+                extend(data, extraData);
             }
         }
     }
@@ -53,20 +278,20 @@ function getDataOfNode(el) {
     var attrData = el.getAttribute(CONF.defaultDataAttr);
     if (attrData != null) {
         attrData = parseDataFromString(attrData);
-        if (!Util.isObject(attrData)) {
+        if (!isObject(attrData)) {
             var t = String(attrData);
             attrData = {};
             attrData[CONF.defaultDataParamInUrl] = t;
         }
     } else {
         attrData = {};
-        Util.each(el.attributes, function (value, name) {
+        each(el.attributes, function (value, name) {
             if (name.startsWith(CONF.defaultDataAttr + '-')) {
                 attrData[name.substr(CONF.defaultDataAttr.length + 1)] = value;
             }
         });
     }
-    Util.extend(data, attrData);
+    extend(data, attrData);
 
     return data;
 }
@@ -78,7 +303,7 @@ function getDataOfNode(el) {
  */
 function queryParamStringifyData(data) {
     if (data == null) return '';
-    if (Util.isBasic(data)) return encodeURIComponent(String(data));
+    if (isBasic(data)) return encodeURIComponent(String(data));
     return encodeURIComponent(JSON.stringify(data));
 }
 
@@ -89,7 +314,7 @@ function queryParamStringifyData(data) {
  */
 function queryStringifyObject(obj) {
     var r = [];
-    Util.each(obj, function (v, p) {
+    each(obj, function (v, p) {
         r.push(queryParamStringifyData(p) + '=' + queryParamStringifyData(v));
     });
     return r.join('&');
@@ -156,7 +381,7 @@ var CONF = {
 (function () {
     CONF.eventToType = {};
     CONF.typeAttrEnum = {};
-    Util.each(CONF.typeEnum, function (v, p) {
+    each(CONF.typeEnum, function (v, p) {
         CONF.eventToType[p] = CONF.typeAttrPrefix + p;
         CONF.typeAttrEnum[CONF.typeAttrPrefix + p] = v;
     });
@@ -168,10 +393,10 @@ var CONF = {
  * @return {[type]}      [description]
  */
 var config = function (conf) {
-    if (!Util.isObject(conf)) return false;
-    Util.each(conf, function (v, p) {
+    if (!isObject(conf)) return false;
+    each(conf, function (v, p) {
         if (CONF.hasOwnProperty(p)) {
-            CONF[p] = (Util.isBasic(v) || Util.isBasic(CONF[p])) ? v : Util.extend(CONF[p], v);
+            CONF[p] = (isBasic(v) || isBasic(CONF[p])) ? v : extend(CONF[p], v);
         } else {
             CONF.codeOptions[p] = v;
         }
@@ -185,16 +410,16 @@ var config = function (conf) {
  * @return {[type]}      [description]
  */
 function bindDataToNode(el, data) {
-    if (Util.isString(data)) {
+    if (isString(data)) {
         $(el).attr(CONF.defaultDataAttr, data);
-    } else if (Util.isObject(data)) {
+    } else if (isObject(data)) {
         if (data.code && data.data) {
             $(el).attr(CONF.defaultCodeAttr, data.code);
             data = data.data;
         }
-        Util.each(data, function (v, p) {
+        each(data, function (v, p) {
             $(el).attr(CONF.defaultDataAttr + '-' + p, v == null ? ''
-                : (Util.isBasic(v) ? String(v) : JSON.stringify(v)));
+                : (isBasic(v) ? String(v) : JSON.stringify(v)));
         });
     }
 }
@@ -207,19 +432,19 @@ function bindDataToNode(el, data) {
  * @return {[type]}                   [description]
  */
 var bind = function (el, type, obj) {
-    if (Util.isObject(obj)) bindDataToNode(el, obj);
-    if (Util.isObject(type)) {
+    if (isObject(obj)) bindDataToNode(el, obj);
+    if (isObject(type)) {
         bindDataToNode(el, type);
-    } else if (Util.isString(type)) {
+    } else if (isString(type)) {
         if (type === 'all') {
-            Util.each(CONF.typeEnum, function (v, p) {
+            each(CONF.typeEnum, function (v, p) {
                 bind(el, p);
             });
         } else if (CONF.typeEnum[type]) {
             $(el).attr(CONF.eventToType[type], '');
         }
-    } else if (Util.isArray(type)) {
-        Util.each(type, function (v) {
+    } else if (isArray(type)) {
+        each(type, function (v) {
             bind(el, v);
         });
     }
@@ -233,7 +458,7 @@ var bind = function (el, type, obj) {
  */
 var unbind = function (el, type) {
     if (!type || type === 'all') {
-        Util.each(CONF.typeEnum, function (v, p) {
+        each(CONF.typeEnum, function (v, p) {
             unbind(el, p);
         });
     } else if (CONF.typeEnum[type]) {
@@ -249,7 +474,7 @@ var unbind = function (el, type) {
 var check = function (el) {
     var r = {};
     var $el = $(el);
-    Util.each(CONF.typeEnum, function (v, type) {
+    each(CONF.typeEnum, function (v, type) {
         if ($el.attr(CONF.eventToType[type]) == null) {
             r[type] = false;
         }
@@ -268,18 +493,18 @@ var send = function (type, target, callback) {
     if (typeof type !== 'string') return false;
     var data = {};
     data[CONF.defaultTypeParamInUrl] = type;
-    if (Util.isNode(target)) {
-        Util.extend(data, getDataOfNode(target));
-    } else if (Util.isObject(target)) {
-        Util.extend(data, target);
+    if (isNode(target)) {
+        extend(data, getDataOfNode(target));
+    } else if (isObject(target)) {
+        extend(data, target);
     } else {
         return false;
     }
     setCommonData(data);
 
     var url = CONF.sendBy.url;
-    if (Util.isFunction(url)) url = url();
-    if (!Util.isString(url)) return false;
+    if (isFunction(url)) url = url();
+    if (!isString(url)) return false;
     url += '?' + CONF.sendBy.argsStr(data);
     switch (CONF.sendBy.type) {
         case 'script':
@@ -353,7 +578,7 @@ var init = function () {
     }
 
     stat_view: {
-        var sendAllViewStat = Util.throttle(function () {
+        var sendAllViewStat = throttle(function () {
             $('[' + CONF.eventToType['view'] + ']').each(function (i, el) {
                 var $el = $(el);
                 var once = true;
@@ -414,4 +639,12 @@ var init = function () {
 
 $(init);
 
-export { config, bind, unbind, check, send }
+exports.config = config;
+exports.bind = bind;
+exports.unbind = unbind;
+exports.check = check;
+exports.send = send;
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+})));

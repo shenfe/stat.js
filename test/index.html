@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>test</title>
+    </head>
+    <body>
+        <a stat-click stat-code="key1" stat-data='{"name":"a1"}' href="javascript:void(0);">click this</a>
+        <div stat-view stat-code="key2" stat-data="div1">view this</div>
+        <div stat-view stat-code="key2" stat-data="div2" style="position:absolute;top:2000px;left:0px;">view this</div>
+        <div stat-view stat-code="key4" stat-data="div3" stat-view-once="false" style="position:absolute;top:2100px;left:0px;">view this</div>
+        <a stat-click stat-view stat-load stat-code="key3" stat-data-name="a2" href="javascript:void(0);">click or view this</a>
+        <a id="test" href="javascript:void(0);">click this</a>
+        <script src="../dist/stat.js" charset="utf-8"></script>
+        <script type="text/javascript">
+            Stat.config({
+                /* The default attribute that stores the statistic (stat, for short) data */
+                defaultDataAttr: 'stat-data',
+                /* The default attribute that stores the stat code which represents a unique stat object */
+                defaultCodeAttr: 'stat-code',
+
+                /* Each stat code and its options */
+                'key1': {
+                    data: function (node) {
+                        return {
+                            url: node.getAttribute('href')
+                        };
+                    }
+                },
+                'key2': {
+                    view: {
+                        once: true, /* If one time is enough */
+                        whole: false /* If the whole area should be viewed */
+                    }
+                },
+                'key4': {
+                    view: {
+                        whole: true
+                    }
+                },
+
+                /* Specify the way to send stat requests */
+                sendBy: {
+                    type: 'script',
+                    url: function () {
+                        return 'http://pb.sogou.com/pv.gif';
+                    }
+                }
+            });
+        </script>
+        <script type="text/javascript">
+            window.onload = function () {
+                var $target = document.getElementById('test');
+
+                Stat.bind($target, 'click', {
+                    code: 'key1',
+                    data: (function (el) {
+                        return {
+                            url: el.href,
+                            text: el.innerText
+                        };
+                    })($target)
+                });
+
+                $target.addEventListener('click', function (e) {
+                    var bindingStatus = Stat.check(this);
+                    if (bindingStatus.click) {
+                        Stat.unbind(this, 'click');
+                    }
+                }, false);
+
+                Stat.send('load', $target);
+            };
+        </script>
+    </body>
+</html>

@@ -1,3 +1,5 @@
+const uglify = require('rollup-plugin-uglify')
+
 module.exports = {
     input: 'src/index.js',
     name: 'Stat',
@@ -5,7 +7,10 @@ module.exports = {
         file: 'temp/stat.js',
         format: 'umd'
     },
-    globals: {
-        jQueryOrZepto: '$'
-    }
-};
+    plugins: [
+        // uglify({
+        //     // mangle: false,
+        //     ie8: true
+        // })
+    ]
+}

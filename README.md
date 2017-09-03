@@ -1,6 +1,6 @@
 # stat.js
 
-前端埋点通用方案，支持点击、曝光等多种统计需求，支持命令式、声明式等多种方式。
+前端埋点通用方案，支持加载、点击、曝光统计，支持声明式、命令式。
 
 ## Usage
 
@@ -28,7 +28,7 @@
             },
             'key2': {
                 view: {
-                    once: false, /* If one time is enough */
+                    once: true, /* If one time is enough */
                     whole: false /* If the whole area should be viewed */
                 }
             }

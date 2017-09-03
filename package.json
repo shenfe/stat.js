@@ -1,16 +1,17 @@
 {
-    "scripts": {
-        "build:jquery-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/merge.js jquery-in ./dist/mine.jquery-in.js",
-        "build:jquery-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/merge.js jquery-out ./dist/mine.jquery-out.js",
-        "build:zepto-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/merge.js zepto-in ./dist/mine.zepto-in.js",
-        "build:zepto-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/merge.js zepto-out ./dist/mine.zepto-out.js",
-        "build": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/merge.js jquery-in",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "devDependencies": {
-        "rollup": "^0.49.2",
-        "rollup-plugin-commonjs": "^8.2.0",
-        "source-map-support": "^0.4.16",
-        "uglify-js": "^3.0.28"
-    }
+  "scripts": {
+    "build:jquery-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-in ./dist/mine.jquery-in.js",
+    "build:jquery-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-out ./dist/mine.jquery-out.js",
+    "build:zepto-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js zepto-in ./dist/mine.zepto-in.js",
+    "build:zepto-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js zepto-out ./dist/mine.zepto-out.js",
+    "build": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-in",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "rollup": "^0.49.2",
+    "rollup-plugin-commonjs": "^8.2.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "source-map-support": "^0.4.16",
+    "uglify-js": "^3.0.28"
+  }
 }
