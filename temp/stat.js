@@ -496,6 +496,11 @@ var send = function (type, target, callback) {
     if (isNode(target)) {
         extend(data, getDataOfNode(target));
     } else if (isObject(target)) {
+        if (target.code && target.data) {
+            var t = target;
+            target = t.data;
+            target[CONF.defaultCodeParamInUrl] = t.code;
+        }
         extend(data, target);
     } else {
         return false;

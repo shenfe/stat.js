@@ -271,6 +271,11 @@ var send = function (type, target, callback) {
     if (Util.isNode(target)) {
         Util.extend(data, getDataOfNode(target));
     } else if (Util.isObject(target)) {
+        if (target.code && target.data) {
+            var t = target;
+            target = t.data;
+            target[CONF.defaultCodeParamInUrl] = t.code;
+        }
         Util.extend(data, target);
     } else {
         return false;
