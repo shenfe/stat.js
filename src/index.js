@@ -335,6 +335,61 @@ function historyEndsWithWholeInView(list) {
     return false;
 }
 
+var sendAllViewStat = Util.throttle(function () {
+    $('[' + CONF.eventToType['view'] + ']').each(function (i, el) {
+        var $el = $(el);
+        var once = true;
+        var whole = false;
+
+        determine_once_and_whole: {
+            var onceAttr = $el.attr(CONF.eventToType['view'] + '-once');
+            if (String(onceAttr) === 'false') {
+                once = false;
+            }
+            var wholeAttr = $el.attr(CONF.eventToType['view'] + '-whole');
+            if (wholeAttr != null && String(wholeAttr) !== 'false') {
+                whole = true;
+            }
+
+            var code = $el.attr(CONF.defaultCodeAttr);
+            if (CONF.codeOptions[code] && CONF.codeOptions[code].view) {
+                if (CONF.codeOptions[code].view.once === false) {
+                    once = false;
+                }
+                if (CONF.codeOptions[code].view.whole === true) {
+                    whole = true;
+                }
+            }
+        }
+
+        var judge = isInView(el, whole);
+        if (!whole) {
+            if (!judge) {
+                $el.data('stat-view-status', false);
+                return;
+            } else {
+                if ($el.data('stat-view-status')) return;
+                $el.data('stat-view-status', true);
+            }
+            send('view', el);
+            once && $el.removeAttr(CONF.eventToType['view']);
+        } else {
+            if (!$el.data('stat-view-status')) {
+                $el.data('stat-view-status', []);
+            }
+            var statusHistory = $el.data('stat-view-status');
+            if (statusHistory[statusHistory.length - 1] === judge) return;
+            statusHistory.push(judge);
+            if (historyEndsWithWholeInView(statusHistory)) {
+                send('view', el);
+                once && $el.removeAttr(CONF.eventToType['view']);
+            }
+        }
+    });
+}, (typeof CONF.throttleForView === 'number' && CONF.throttleForView >= 100)
+    ? CONF.throttleForView : 100
+);
+
 var init = function () {
     stat_click: {
         $('body').on('click', '[' + CONF.eventToType['click'] + ']', function (e) {
@@ -358,60 +413,6 @@ var init = function () {
     }
 
     stat_view: {
-        var sendAllViewStat = Util.throttle(function () {
-            $('[' + CONF.eventToType['view'] + ']').each(function (i, el) {
-                var $el = $(el);
-                var once = true;
-                var whole = false;
-
-                determine_once_and_whole: {
-                    var onceAttr = $el.attr(CONF.eventToType['view'] + '-once');
-                    if (String(onceAttr) === 'false') {
-                        once = false;
-                    }
-                    var wholeAttr = $el.attr(CONF.eventToType['view'] + '-whole');
-                    if (wholeAttr != null && String(wholeAttr) !== 'false') {
-                        whole = true;
-                    }
-
-                    var code = $el.attr(CONF.defaultCodeAttr);
-                    if (CONF.codeOptions[code] && CONF.codeOptions[code].view) {
-                        if (CONF.codeOptions[code].view.once === false) {
-                            once = false;
-                        }
-                        if (CONF.codeOptions[code].view.whole === true) {
-                            whole = true;
-                        }
-                    }
-                }
-
-                var judge = isInView(el, whole);
-                if (!whole) {
-                    if (!judge) {
-                        $el.data('stat-view-status', false);
-                        return;
-                    } else {
-                        if ($el.data('stat-view-status')) return;
-                        $el.data('stat-view-status', true);
-                    }
-                    send('view', el);
-                    once && $el.removeAttr(CONF.eventToType['view']);
-                } else {
-                    if (!$el.data('stat-view-status')) {
-                        $el.data('stat-view-status', []);
-                    }
-                    var statusHistory = $el.data('stat-view-status');
-                    if (statusHistory[statusHistory.length - 1] === judge) return;
-                    statusHistory.push(judge);
-                    if (historyEndsWithWholeInView(statusHistory)) {
-                        send('view', el);
-                        once && $el.removeAttr(CONF.eventToType['view']);
-                    }
-                }
-            });
-        }, (typeof CONF.throttleForView === 'number' && CONF.throttleForView >= 100)
-            ? CONF.throttleForView : 100
-        );
         sendAllViewStat();
         $(window).on('scroll', sendAllViewStat);
     }
@@ -419,4 +420,4 @@ var init = function () {
 
 $(init);
 
-export { config, bind, unbind, check, send }
+export { config, bind, unbind, check, send, forceAllViewStat: sendAllViewStat }
