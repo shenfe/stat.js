@@ -110,6 +110,15 @@ Stat.send('view', {
     }
 });
 ```
+
+#### forceAllViewStat
+
+强制检查所有需要曝光统计的元素，一般用于动态改变html元素的情况。
+
+```js
+Stat.forceAllViewStat();
+```
+
 ## Build
 
 stat.js依赖jQuery或Zepto，但可以选择是否将jQuery或Zepto打包进代码中。
