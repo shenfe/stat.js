@@ -3,15 +3,39 @@
     <head>
         <meta charset="utf-8">
         <title>test</title>
+        <style media="screen">
+            a {
+                display: block;
+            }
+        </style>
     </head>
     <body>
-        <a stat-click stat-code="key1" stat-data='{"name":"a1"}' href="javascript:void(0);">click this</a>
-        <div stat-view stat-code="key2" stat-data="div1">view this</div>
-        <div stat-view stat-code="key2" stat-data="div2" style="position:absolute;top:2000px;left:0px;">view this</div>
-        <div stat-view stat-code="key4" stat-data="div3" stat-view-once="false" style="position:absolute;top:2100px;left:0px;">view this</div>
-        <a stat-click stat-view stat-load stat-code="key3" stat-data-name="a2" href="javascript:void(0);">click or view this</a>
-        <a id="test" href="javascript:void(0);">click this</a>
-        <script src="../dist/stat.js" charset="utf-8"></script>
+        <a stat-click stat-code="key1" stat-data='{"name":"e1"}' href="javascript:void(0);">
+            e1: click
+        </a>
+
+        <div stat-view stat-code="key2" stat-data="e2">
+            e2: view
+        </div>
+
+        <div id="test2" stat-view stat-code="key2" stat-data="e3" style="position:absolute;top:2000px;left:0px;">
+            e3: view
+        </div>
+
+        <div stat-view stat-code="key4" stat-data="e4" stat-view-once="false" style="position:absolute;top:2100px;left:0px;">
+            e4: view
+        </div>
+
+        <a stat-click stat-view stat-load stat-code="key3" stat-data-name="e5" href="javascript:void(0);">
+            e5: click view load
+        </a>
+
+        <a id="test1" href="javascript:void(0);">
+            e6: click load
+        </a>
+
+        <script src="../dist/stat.js" charset="utf-8"></script>
+
         <script type="text/javascript">
             Stat.config({
                 /* The default attribute that stores the statistic (stat, for short) data */
@@ -48,28 +72,56 @@
                 }
             });
         </script>
+
         <script type="text/javascript">
             window.onload = function () {
-                var $target = document.getElementById('test');
+                var $target1 = document.getElementById('test1');
 
-                Stat.bind($target, 'click', {
+                Stat.bind($target1, 'click', {
                     code: 'key1',
                     data: (function (el) {
                         return {
+                            name: 'e6',
                             url: el.href,
                             text: el.innerText
                         };
-                    })($target)
+                    })($target1)
                 });
 
-                $target.addEventListener('click', function (e) {
+                $target1.addEventListener('click', function (e) {
                     var bindingStatus = Stat.check(this);
                     if (bindingStatus.click) {
                         Stat.unbind(this, 'click');
                     }
                 }, false);
 
-                Stat.send('load', $target);
+                Stat.send('load', $target1);
+
+                var $target2 = document.getElementById('test2');
+
+                $target2.addEventListener('click', function (e) {
+                    var dom1 = document.createElement('div');
+                    dom1.setAttribute('stat-view', '');
+                    dom1.setAttribute('stat-code', 'key2');
+                    dom1.setAttribute('stat-data-name', 'e7');
+                    dom1.setAttribute('style', 'position:absolute;top:1600px;left:0px;');
+                    dom1.innerText = 'e7: view';
+                    document.body.insertBefore(dom1, $target2);
+
+                    var dom2 = document.createElement('div');
+                    dom2.setAttribute('stat-view-once', 'false');
+                    dom2.setAttribute('style', 'position:absolute;top:1800px;left:0px;');
+                    dom2.innerText = 'e8: view';
+                    Stat.bind(dom2, 'view', {
+                        code: 'key1',
+                        data: {
+                            name: 'e8'
+                        }
+                    });
+                    document.body.insertBefore(dom2, $target2);
+
+                    Stat.forceAllViewStat();
+                }, false);
             };
         </script>
     </body>

@@ -335,7 +335,7 @@ function historyEndsWithWholeInView(list) {
     return false;
 }
 
-var sendAllViewStat = Util.throttle(function () {
+var forceAllViewStat = Util.throttle(function () {
     $('[' + CONF.eventToType['view'] + ']').each(function (i, el) {
         var $el = $(el);
         var once = true;
@@ -413,11 +413,11 @@ var init = function () {
     }
 
     stat_view: {
-        sendAllViewStat();
-        $(window).on('scroll', sendAllViewStat);
+        forceAllViewStat();
+        $(window).on('scroll', forceAllViewStat);
     }
 };
 
 $(init);
 
-export { config, bind, unbind, check, send, forceAllViewStat: sendAllViewStat }
+export { config, bind, unbind, check, send, forceAllViewStat }
