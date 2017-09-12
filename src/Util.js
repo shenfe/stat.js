@@ -28,7 +28,7 @@ var isFunction = function (v) {
 };
 
 var isObject = function (v) {
-    return Object.prototype.toString.call(v) === '[object Object]';
+    return v != null && Object.prototype.toString.call(v) === '[object Object]';
 };
 
 var isArray = function (v) {
