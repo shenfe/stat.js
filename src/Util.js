@@ -211,9 +211,9 @@ var touchLeaves = function (obj) {
 
 var extend = function (dest, srcs, clean) {
     if (!isObject(dest)) return null;
-    clean = arguments[arguments.length - 1] === true ? true : false;
     var args = Array.prototype.slice.call(arguments, 1,
         arguments[arguments.length - 1] === true ? (arguments.length - 1) : arguments.length);
+    clean = arguments[arguments.length - 1] === true ? true : false;
 
     function extendObj(obj, src, clean) {
         if (!isObject(src)) return;
