@@ -299,6 +299,8 @@ var send = function (type, target, callback) {
 };
 
 function isInView(el, whole) {
+    if ($(el).is(':hidden')) return false;
+    
     var eTop = $(el).offset().top;
     var eBottom = $(el).height() + eTop;
     var wTop = $(window).scrollTop();
