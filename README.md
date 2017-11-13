@@ -125,6 +125,10 @@ Stat.send('view', {
 Stat.forceAllViewStat();
 ```
 
+## 可能发生的问题
+
+如果在埋点统计的绑定事件执行之前，元素已绑定了事件并在事件处理时阻止了默认行为（`e.preventDefault()`），那么绑定的统计事件可能不会被触发。这时请考虑取消对默认行为的阻止，酌情变通。
+
 ## Build
 
 stat.js依赖jQuery或Zepto，但可以选择是否将jQuery或Zepto打包进代码中。
