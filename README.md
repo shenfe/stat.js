@@ -6,6 +6,11 @@
 
 stat.js导出为umd模块。
 
+### npm
+```bash
+npm install stat-fe --save
+```
+
 ### 脚本引入
 
 通过script标签引入后，全局变量Stat即为模块。
@@ -17,17 +22,12 @@ stat.js导出为umd模块。
 ### 模块引入
 
 ```js
-var Stat = require('path/to/stat.js');
+var Stat = require('stat-fe/dist/stat');
 // or
-import Stat from 'path/to/stat.js'
+import Stat from 'stat-fe/dist/stat'
 // or
-import * as Stat from 'path/to/stat.js'
+import * as Stat from 'stat-fe/dist/stat'
 
-```
-
-### npm
-```
-npm install stat-fe --save
 ```
 
 ### HTML标签属性形式声明
@@ -156,11 +156,9 @@ Stat.forceAllLoadStat();
 stat.js依赖jQuery或Zepto，但可以选择是否将jQuery或Zepto打包进代码中。
 
 ```bash
-npm run build               # 默认包含jQuery
-npm run build:jquery-inside     # 包含jQuery
-npm run build:jquery-outside    # 不包含jQuery
-npm run build:zepto-inside      # 包含Zepto
-npm run build:zepto-outside     # 不包含Zepto
+npm run build               # 默认不包含依赖库，自行引入
+npm run build:jquery     # 包含jQuery，精简版
+npm run build:zepto     # 包含Zepto，精简版
 ```
 
 ## change

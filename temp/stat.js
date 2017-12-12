@@ -477,7 +477,7 @@ var CONF = {
   defaultCodeParamInUrl: 'stat_code',
   defaultDataParamInUrl: 'stat_data',
   sendBy: {
-    type: 'image',
+    type: 'ajax',
     url: '/',
     argsStr: queryStringifyObject
   },
