@@ -18,6 +18,11 @@ stat.js导出为umd模块。
 
 ```js
 var Stat = require('path/to/stat.js');
+
+import Stat from 'path/to/stat.js'
+
+import * as Stat from 'path/to/stat.js'
+
 ```
 
 ### HTML标签属性形式声明
@@ -37,6 +42,10 @@ var Stat = require('path/to/stat.js');
 ```
 
 ### JavaScript API调用
+
+#### init
+
+Stat.init(config)
 
 #### config
 
@@ -61,11 +70,10 @@ Stat.config({
         }
     },
 
-    sendBy: { // 设置统计请求的发送方式，默认为图片请求
-        type: 'image',
-        url: function () {
-            return '//some-domain.com/some-path';
-        }
+    sendBy: { // 设置统计请求的发送方式，默认为ajax,还支持image、script
+        type: 'ajax',
+        url: '//some-domain.com/some-path';
+        
     }
 });
 ```
@@ -125,6 +133,14 @@ Stat.send('view', {
 Stat.forceAllViewStat();
 ```
 
+#### forceAllLoadStat
+
+强制检查所有需要load统计的元素，一般用于动态改变html元素的情况。
+
+```js
+Stat.forceAllLoadStat();
+```
+
 ## 可能发生的问题
 
 如果在埋点统计的绑定事件执行之前，元素已绑定了事件并在事件处理时阻止了默认行为（`e.preventDefault()`），那么绑定的统计事件可能不会被触发。这时请考虑取消对默认行为的阻止，酌情变通。
@@ -135,11 +151,25 @@ stat.js依赖jQuery或Zepto，但可以选择是否将jQuery或Zepto打包进代
 
 ```bash
 npm run build               # 默认包含jQuery
-npm run build:jquery-in     # 包含jQuery
-npm run build:jquery-out    # 不包含jQuery
-npm run build:zepto-in      # 包含Zepto
-npm run build:zepto-out     # 不包含Zepto
+npm run build:jquery-inside     # 包含jQuery
+npm run build:jquery-outside    # 不包含jQuery
+npm run build:zepto-inside      # 包含Zepto
+npm run build:zepto-outside     # 不包含Zepto
 ```
+
+## change
+
+增加export default，这样import时，同时支持import x from y和 import * as x from y的用法
+loadScript的script元素使用完后销毁
+loadImage的img元素只创建一次,增加错误事件监听也销毁，避免stat-load一直执行
+send type增加ajax,并且默认设置为ajax，因为script每次都要操作DOM,代价太大，img则服务器必须返回图片,不然onload不会执行
+setCommonData改为可配置
+package.json命名mine.改为stat.
+init方法改为手动触发，不然会出现使用默认配置执行sendAllLoadStat方法的问题
+sendAllLoadStat改为表达式
+去掉loopForLoad相关功能,提供forceAllLoadStat方法，可以让用户初始化后再send load的时机
+
+
 
 ## License
 
