@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const uglifyjs = require('uglify-js');
+const shell = require('shelljs');
 
 const args = process.argv.slice(2);
 args.forEach(function (val, index, array) {
@@ -8,11 +8,14 @@ args.forEach(function (val, index, array) {
 });
 
 let moduleStr = fs.readFileSync(path.resolve(process.cwd(), './temp/stat.js'), 'utf8');
-
-let outputFile = args[1] || './dist/stat.js';
-let option = args[0] || 'jquery-in';
-let jQueryOrZepto = option.indexOf('jquery') >= 0 ? 'jquery' : 'zepto';
-let jz = (option.indexOf('-in') < 0) ? '' : fs.readFileSync(path.resolve(process.cwd(), `./src/lib/${jQueryOrZepto}.min.js`), 'utf8');
+let jz = ''
+let outputFile = './dist/stat.js';
+if(args.length>1){
+    outputFile = args[1];
+    let option = args[0];
+    let jQueryOrZepto = option.indexOf('jquery') >= 0 ? 'jquery' : 'zepto';
+    jz = fs.readFileSync(path.resolve(process.cwd(), `./src/lib/${jQueryOrZepto}.min.js`), 'utf8');
+}
 
 fs.writeFileSync(path.resolve(process.cwd(), outputFile),
 `(function () {
@@ -23,3 +26,5 @@ fs.writeFileSync(path.resolve(process.cwd(), outputFile),
     })(window, (typeof jQuery === 'undefined') ? Zepto : jQuery);
 })();`
 );
+
+shell.cp(outputFile,'./index.js')
