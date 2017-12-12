@@ -18,9 +18,9 @@ stat.js导出为umd模块。
 
 ```js
 var Stat = require('path/to/stat.js');
-
+// or
 import Stat from 'path/to/stat.js'
-
+// or
 import * as Stat from 'path/to/stat.js'
 
 ```
@@ -44,8 +44,9 @@ import * as Stat from 'path/to/stat.js'
 ### JavaScript API调用
 
 #### init
-
+```js
 Stat.init(config)
+```
 
 #### config
 
