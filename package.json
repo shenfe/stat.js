@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "description": "web analytics, statistics, event tracking",
   "author": "shenfe, panhezeng <panhezeng@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:panhezeng/stat.js.git"
+  },
+  "main": "index.js",
+  "license": "MIT",
   "scripts": {
     "build:jquery-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-in ./dist/stat.jquery-in.js",
     "build:jquery-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-out ./dist/stat.jquery-out.js",
