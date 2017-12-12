@@ -25,6 +25,11 @@ import * as Stat from 'path/to/stat.js'
 
 ```
 
+### npm
+```
+npm install stat-fe --save
+```
+
 ### HTML标签属性形式声明
 
 支持三种行为统计：点击、曝光、加载，对应以下示例中`stat-click`、`stat-view`、`stat-load`属性。点击，指元素被click一次则发送一个请求。曝光，指元素进入可见范围时发送一个请求，可选择是否仅统计一次，可选择是否元素全部进入可见范围才算作曝光。加载，指元素在页面中加载时发送一个请求。

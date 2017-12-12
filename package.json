@@ -1,4 +1,8 @@
 {
+  "name": "stat-fe",
+  "version": "1.0.0",
+  "description": "web analytics, statistics, event tracking",
+  "author": "shenfe, panhezeng <panhezeng@gmail.com>",
   "scripts": {
     "build:jquery-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-in ./dist/stat.jquery-in.js",
     "build:jquery-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-out ./dist/stat.jquery-out.js",
@@ -13,5 +17,14 @@
     "rollup-plugin-uglify": "^2.0.1",
     "source-map-support": "^0.4.16",
     "uglify-js": "^3.0.28"
-  }
+  },
+  "engines": {
+    "node": ">= 8.0.0",
+    "npm": ">= 5.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
 }
