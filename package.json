@@ -1,9 +1,9 @@
 {
   "scripts": {
-    "build:jquery-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-in ./dist/mine.jquery-in.js",
-    "build:jquery-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-out ./dist/mine.jquery-out.js",
-    "build:zepto-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js zepto-in ./dist/mine.zepto-in.js",
-    "build:zepto-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js zepto-out ./dist/mine.zepto-out.js",
+    "build:jquery-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-in ./dist/stat.jquery-in.js",
+    "build:jquery-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-out ./dist/stat.jquery-out.js",
+    "build:zepto-inside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js zepto-in ./dist/stat.zepto-in.js",
+    "build:zepto-outside": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js zepto-out ./dist/stat.zepto-out.js",
     "build": "./node_modules/.bin/rollup -c ./build/rollup.config.js && node ./build/build.js jquery-in",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
