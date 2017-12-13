@@ -53,9 +53,7 @@ import * as Stat from 'stat-fe/dist/stat'
 Stat.init(config)
 ```
 
-#### config
-
-配置。
+#### config配置 默认不给url上面挂载公共数据，比如type，timestamp，可以配置commonData为true开启
 
 ```js
 Stat.config({

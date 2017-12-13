@@ -321,6 +321,37 @@ var Util = {
   throttle
 };
 
+var CONF = {
+  commonData: false,
+  throttleForView: 100,
+  typeEnum: {
+    'click': true,
+    'view': true,
+    'load': true
+  },
+  typeAttrPrefix: 'stat-',
+  defaultCodeAttr: 'stat-code',
+  defaultDataAttr: 'stat-data',
+  defaultTimestampParamInUrl: 'stat_common_data_timestamp',
+  defaultTypeParamInUrl: 'stat_common_data_type',
+  defaultCodeParamInUrl: 'stat_code',
+  defaultDataParamInUrl: 'stat_data',
+  sendBy: {
+    type: 'ajax',
+    url: '/',
+    argsStr: queryStringifyObject
+  },
+  codeOptions: {}
+};
+(function () {
+  CONF.eventToType = {};
+  CONF.typeAttrEnum = {};
+  Util.each(CONF.typeEnum, function (v, p) {
+    CONF.eventToType[p] = CONF.typeAttrPrefix + p;
+    CONF.typeAttrEnum[CONF.typeAttrPrefix + p] = v;
+  });
+})();
+
 /**
  * [parseDataFromString description]
  * @param  {String} str [description]
@@ -334,60 +365,6 @@ function parseDataFromString (str) {
     r = str;
   }
   return r
-}
-
-/**
- * [setCommonData description]
- * @param {Object} data [description]
- */
-function setCommonData (data) {
-  data._ = '' + (new Date()).getTime() + '_' + String(Math.random()).substr(2, 4);
-}
-
-/**
- * Get code and data in a Node.
- * @param  {Node} el    [description]
- * @return {Object}     [description]
- */
-function getDataOfNode (el) {
-  var data = {};
-
-  var code = el.getAttribute(CONF.defaultCodeAttr);
-  if (code != null) {
-    data[CONF.defaultCodeParamInUrl] = code;
-    var codeConf = CONF.codeOptions[code];
-    if (codeConf) {
-      var extraData;
-      if (Util.isFunction(codeConf.data)) {
-        extraData = codeConf.data.call(el, el);
-      } else if (Util.isObject(codeConf.data)) {
-        extraData = codeConf.data;
-      }
-      if (Util.isObject(extraData)) {
-        Util.extend(data, extraData);
-      }
-    }
-  }
-
-  var attrData = el.getAttribute(CONF.defaultDataAttr);
-  if (attrData != null) {
-    attrData = parseDataFromString(attrData);
-    if (!Util.isObject(attrData)) {
-      var t = String(attrData);
-      attrData = {};
-      attrData[CONF.defaultDataParamInUrl] = t;
-    }
-  } else {
-    attrData = {};
-    Util.each(el.attributes, function (value, name) {
-      if (name.startsWith(CONF.defaultDataAttr + '-')) {
-        attrData[name.substr(CONF.defaultDataAttr.length + 1)] = value;
-      }
-    });
-  }
-  Util.extend(data, attrData);
-
-  return data
 }
 
 /**
@@ -413,6 +390,88 @@ function queryStringifyObject (obj) {
   });
   return r.join('&')
 }
+
+/**
+ * Get code and data in a Node.
+ * @param  {Node} el    [description]
+ * @return {Object}     [description]
+ */
+function getDataOfNode (el) {
+  var data = {};
+  var code = el.getAttribute(CONF.defaultCodeAttr);
+  if (code) {
+    data[CONF.defaultCodeParamInUrl] = code;
+    var codeConf = CONF.codeOptions[code];
+    if (codeConf) {
+      var extraData = codeConf.data;
+      if (Util.isFunction(codeConf.data)) {
+        extraData = codeConf.data.call(el, el);
+      }
+      if (Util.isObject(extraData)) {
+        Util.extend(data, extraData);
+      }
+    }
+  }
+
+  var statData = el.getAttribute(CONF.defaultDataAttr);
+  if (statData) {
+    statData = parseDataFromString(statData);
+    if (!Util.isObject(statData)) {
+      var t = String(statData);
+      statData = {};
+      statData[CONF.defaultDataParamInUrl] = t;
+    }
+  } else {
+    statData = {};
+    Util.each(el.attributes, function (value, name) {
+      if (name.startsWith(CONF.defaultDataAttr + '-')) {
+        statData[name.substr(CONF.defaultDataAttr.length + 1)] = value;
+      }
+    });
+  }
+  Util.extend(data, statData);
+
+  return data
+}
+
+function getDataOfObj (obj) {
+  var data = {};
+  var code = obj.code;
+  if (code) {
+    data[CONF.defaultCodeParamInUrl] = code;
+    var codeConf = CONF.codeOptions[code];
+    if (codeConf) {
+      var extraData = codeConf.data;
+      if (Util.isObject(extraData)) {
+        Util.extend(data, extraData);
+      }
+    }
+  }
+  var statData = obj.data;
+  if (statData) {
+    if (!Util.isObject(statData)) {
+      var t = String(statData);
+      statData = {};
+      statData[CONF.defaultDataParamInUrl] = t;
+    }
+    Util.extend(data, statData);
+  }
+  return data
+}
+
+var getUrlData = function (type, elOrObj) {
+  var data = {};
+  if (Util.isNode(elOrObj)) {
+    Util.extend(data, getDataOfNode(elOrObj));
+  } else {
+    Util.extend(data, getDataOfObj(elOrObj));
+  }
+  if (CONF.commonData) {
+    data[CONF.defaultTypeParamInUrl] = type;
+    data[CONF.defaultTimestampParamInUrl] = (new Date()).getTime();
+  }
+  return data
+};
 
 var xhttp;
 
@@ -467,35 +526,33 @@ function loadImage (url, callback) {
   };
 }
 
-var CONF = {
-  commonData: false,
-  throttleForView: 100,
-  typeEnum: {
-    'click': true,
-    'view': true,
-    'load': true
-  },
-  typeAttrPrefix: 'stat-',
-  defaultCodeAttr: 'stat-code',
-  defaultDataAttr: 'stat-data',
-  defaultTypeParamInUrl: 'stat_type',
-  defaultCodeParamInUrl: 'stat_code',
-  defaultDataParamInUrl: 'stat_data',
-  sendBy: {
-    type: 'ajax',
-    url: '/',
-    argsStr: queryStringifyObject
-  },
-  codeOptions: {}
+/**
+ * [description]
+ * @param  {String} type        [description]
+ * @param  {Object|Node} target [description]
+ * @param  {Function} callback  [description]
+ * @return {[type]}             [description]
+ */
+var send = function (type, target, callback) {
+  if (typeof type !== 'string') return false
+  if (!target) return false
+  var url = CONF.sendBy.url;
+  if (Util.isFunction(url)) url = url();
+  if (!Util.isString(url)) return false
+  url += '?' + CONF.sendBy.argsStr(getUrlData(type, target));
+  switch (CONF.sendBy.type) {
+    case 'ajax':
+      ajax(url, callback);
+      break
+    case 'script':
+      loadScript(url, callback);
+      break
+    case 'image':
+    default:
+      loadImage(url, callback);
+  }
+  console.log(url);
 };
-(function () {
-  CONF.eventToType = {};
-  CONF.typeAttrEnum = {};
-  Util.each(CONF.typeEnum, function (v, p) {
-    CONF.eventToType[p] = CONF.typeAttrPrefix + p;
-    CONF.typeAttrEnum[CONF.typeAttrPrefix + p] = v;
-  });
-})();
 
 /**
  * [description]
@@ -590,50 +647,6 @@ var check = function (el) {
     }
   });
   return r
-};
-
-/**
- * [description]
- * @param  {String} type        [description]
- * @param  {Object|Node} target [description]
- * @param  {Function} callback  [description]
- * @return {[type]}             [description]
- */
-var send = function (type, target, callback) {
-  if (typeof type !== 'string') return false
-  var data = {};
-  data[CONF.defaultTypeParamInUrl] = type;
-  if (Util.isNode(target)) {
-    Util.extend(data, getDataOfNode(target));
-  } else if (Util.isObject(target)) {
-    if (target.code && target.data) {
-      var t = target;
-      target = t.data;
-      target[CONF.defaultCodeParamInUrl] = t.code;
-    }
-    Util.extend(data, target);
-  } else {
-    return false
-  }
-  if (CONF.commonData) setCommonData(data);
-
-  var url = CONF.sendBy.url;
-  if (Util.isFunction(url)) url = url();
-  if (!Util.isString(url)) return false
-  url += '?' + CONF.sendBy.argsStr(data);
-  switch (CONF.sendBy.type) {
-    case 'ajax':
-      ajax(url, callback);
-      break
-    case 'script':
-      loadScript(url, callback);
-      break
-    case 'image':
-    default:
-      loadImage(url, callback);
-  }
-
-  console.log(url);
 };
 
 function isInView (el, whole) {
@@ -759,11 +772,11 @@ var init = function (conf) {
 
 var index = {init, config, bind, unbind, check, send, forceAllViewStat, forceAllLoadStat};
 
+exports.send = send;
 exports.config = config;
 exports.bind = bind;
 exports.unbind = unbind;
 exports.check = check;
-exports.send = send;
 exports.forceAllViewStat = forceAllViewStat;
 exports.forceAllLoadStat = forceAllLoadStat;
 exports.init = init;
