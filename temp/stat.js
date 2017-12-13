@@ -334,9 +334,9 @@ var CONF = {
   eventToType: {},
   typeEnum: {},
   excludeType: [],
-  typeAttrPrefix: 'stat-',
-  defaultCodeAttr: 'stat-code',
-  defaultDataAttr: 'stat-data',
+  typeAttrPrefix: 'data-stat-',
+  defaultCodeAttr: 'data-stat-code',
+  defaultDataAttr: 'data-stat-data',
   defaultTimestampParamInUrl: 'stat_timestamp',
   defaultTypeParamInUrl: 'stat_type',
   defaultCodeParamInUrl: 'stat_code',
@@ -703,19 +703,20 @@ var forceAllViewStat = Util.throttle(function () {
       }
 
       var judge = isInView(el, whole);
+      var prefix = CONF.typeAttrPrefix.replace('data-', '');
       if (!whole) {
         if (!judge) {
-          $el.data('stat-view-status', false);
+          $el.data(prefix + 'view-status', false);
           return
         } else {
-          if ($el.data('stat-view-status')) return
-          $el.data('stat-view-status', true);
+          if ($el.data(prefix + 'view-status')) return
+          $el.data(prefix + 'view-status', true);
         }
         send(TYPE.view, el);
         once && $el.removeAttr(CONF.eventToType[TYPE.view]);
       } else {
-        if (!$el.data('stat-view-status')) {
-          $el.data('stat-view-status', []);
+        if (!$el.data(prefix + 'view-status')) {
+          $el.data(prefix + 'view-status', []);
         }
         var statusHistory = $el.data('stat-view-status');
         if (statusHistory[statusHistory.length - 1] === judge) return

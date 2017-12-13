@@ -8,7 +8,7 @@ stat.js导出为umd模块。
 
 ### npm
 ```bash
-npm install stat-fe --save
+npm install data-stat-fe --save
 ```
 
 ### 脚本引入
@@ -22,28 +22,28 @@ npm install stat-fe --save
 ### 模块引入
 
 ```js
-var Stat = require('stat-fe/dist/stat');
+var Stat = require('data-stat-fe/dist/stat');
 // or
-import Stat from 'stat-fe/dist/stat'
+import Stat from 'data-stat-fe/dist/stat'
 // or
-import * as Stat from 'stat-fe/dist/stat'
+import * as Stat from 'data-stat-fe/dist/stat'
 
 ```
 
 ### HTML标签属性形式声明
 
-支持三种行为统计：点击、曝光、加载，对应以下示例中`stat-click`、`stat-view`、`stat-load`属性。点击，指元素被click一次则发送一个请求。曝光，指元素进入可见范围时发送一个请求，可选择是否仅统计一次，可选择是否元素全部进入可见范围才算作曝光。加载，指元素在页面中加载时发送一个请求。
+支持三种行为统计：点击、曝光、加载，对应以下示例中`data-stat-click`、`data-stat-view`、`data-stat-load`属性。点击，指元素被click一次则发送一个请求。曝光，指元素进入可见范围时发送一个请求，可选择是否仅统计一次，可选择是否元素全部进入可见范围才算作曝光。加载，指元素在页面中加载时发送一个请求。
 
-需要为统计对象定义编码，例如“首页feed流中的项”的统计编码为key1。统计编码在HTML标签中的属性名可自定义，以下示例中为`stat-code`。
+需要为统计对象定义编码，例如“首页feed流中的项”的统计编码为key1。统计编码在HTML标签中的属性名可自定义，以下示例中为`data-stat-code`。
 
-可以为统计对象通过HTML标签属性的方式指定统计请求所要携带的统计数据。统计数据在HTML标签中的属性名可自定义，以下示例中为`stat-data`。如果使用`stat-data`定义统计数据，则属性值最好是JSON字符串。也可以通过`stat-data-paramname="paramvalue"`的方式定义统计数据，如以下示例中的`stat-data-name`。
+可以为统计对象通过HTML标签属性的方式指定统计请求所要携带的统计数据。统计数据在HTML标签中的属性名可自定义，以下示例中为`data-stat-data`。如果使用`data-stat-data`定义统计数据，则属性值最好是JSON字符串。也可以通过`data-stat-data-paramname="paramvalue"`的方式定义统计数据，如以下示例中的`data-stat-data-name`。
 
 ```html
-<a stat-click stat-code="key1" stat-data='{"name":"a1"}' href="javascript:void(0);">click this</a>
-<div stat-view stat-code="key2" stat-data='{"name":"div1"}'>view this</div>
-<div stat-view stat-code="key2" stat-data-name="div2" style="position:absolute;top:2000px;left:0px;">view this</div>
-<div stat-view stat-code="key4" stat-data-name="div3" stat-view-once="false" style="position:absolute;top:2100px;left:0px;">view this</div>
-<a stat-click stat-view stat-load stat-code="key3" stat-data-name="a2" href="javascript:void(0);">click or view this</a>
+<a data-stat-click data-stat-code="key1" data-stat-data='{"name":"a1"}' href="javascript:void(0);">click this</a>
+<div data-stat-view data-stat-code="key2" data-stat-data='{"name":"div1"}'>view this</div>
+<div data-stat-view data-stat-code="key2" data-stat-data-name="div2" style="position:absolute;top:2000px;left:0px;">view this</div>
+<div data-stat-view data-stat-code="key4" data-stat-data-name="div3" data-stat-view-once="false" style="position:absolute;top:2100px;left:0px;">view this</div>
+<a data-stat-click data-stat-view data-stat-load data-stat-code="key3" data-stat-data-name="a2" href="javascript:void(0);">click or view this</a>
 ```
 
 ### JavaScript API调用
@@ -57,8 +57,8 @@ Stat.init(config)
 
 ```js
 Stat.config({
-    defaultDataAttr: 'stat-data', // 统计数据的HTML标签属性名
-    defaultCodeAttr: 'stat-code', // 统计编码的HTML标签属性名
+    defaultDataAttr: 'data-stat-data', // 统计数据的HTML标签属性名
+    defaultCodeAttr: 'data-stat-code', // 统计编码的HTML标签属性名
      commonData: true,
      excludeType: [Stat.TYPE.view],
     'key1': {

@@ -10,23 +10,23 @@
     </style>
 </head>
 <body>
-<a stat-click stat-code="key1" stat-data='{"name":"e1"}' href="javascript:void(0);">
+<a data-stat-click data-stat-code="key1" data-stat-data='{"name":"e1"}' href="javascript:void(0);">
     e1: click
 </a>
 
-<div stat-view stat-code="key2" stat-data="e2">
+<div data-stat-view data-stat-code="key2" data-stat-data="e2">
     e2: view
 </div>
 
-<div id="test2" stat-view stat-code="key2" stat-data="e3" style="position:absolute;top:2000px;left:0px;">
+<div id="test2" data-stat-view data-stat-code="key2" data-stat-data="e3" style="position:absolute;top:2000px;left:0px;">
     e3: view
 </div>
 
-<div stat-view stat-code="key4" stat-data="e4" stat-view-once="false" style="position:absolute;top:2100px;left:0px;">
+<div data-stat-view data-stat-code="key4" data-stat-data="e4" data-stat-view-once="false" style="position:absolute;top:2100px;left:0px;">
     e4: view
 </div>
 
-<a stat-click stat-view stat-load stat-code="key3" stat-data-name="e5" href="javascript:void(0);">
+<a data-stat-click data-stat-view data-stat-load data-stat-code="key3" data-stat-data-name="e5" href="javascript:void(0);">
     e5: click view load
 </a>
 
@@ -41,9 +41,9 @@
 
     Stat.init({
       /* The default attribute that stores the statistic (stat, for short) data */
-      defaultDataAttr: 'stat-data',
+      defaultDataAttr: 'data-stat-data',
       /* The default attribute that stores the stat code which represents a unique stat object */
-      defaultCodeAttr: 'stat-code',
+      defaultCodeAttr: 'data-stat-code',
       commonData: true,
       excludeType: [Stat.TYPE.view],
       /* Each stat code and its options */
@@ -99,15 +99,15 @@
 
     $target2.addEventListener('click', function (e) {
       var dom1 = document.createElement('div')
-      dom1.setAttribute('stat-view', '')
-      dom1.setAttribute('stat-code', 'key2')
-      dom1.setAttribute('stat-data-name', 'e7')
+      dom1.setAttribute('data-stat-view', '')
+      dom1.setAttribute('data-stat-code', 'key2')
+      dom1.setAttribute('data-stat-data-name', 'e7')
       dom1.setAttribute('style', 'position:absolute;top:1600px;left:0px;')
       dom1.innerText = 'e7: view'
       document.body.insertBefore(dom1, $target2)
 
       var dom2 = document.createElement('div')
-      dom2.setAttribute('stat-view-once', 'false')
+      dom2.setAttribute('data-stat-view-once', 'false')
       dom2.setAttribute('style', 'position:absolute;top:1800px;left:0px;')
       dom2.innerText = 'e8: view'
       Stat.bind(dom2, 'view', {
