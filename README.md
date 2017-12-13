@@ -53,13 +53,14 @@ import * as Stat from 'stat-fe/dist/stat'
 Stat.init(config)
 ```
 
-#### config配置 默认不给url上面挂载公共数据，比如type，timestamp，可以配置commonData为true开启
+#### config配置 默认不给url上面挂载公共数据，比如type，timestamp，可以配置commonData为true开启，可以用excludeType排除不需要初始化监听的类型
 
 ```js
 Stat.config({
     defaultDataAttr: 'stat-data', // 统计数据的HTML标签属性名
     defaultCodeAttr: 'stat-code', // 统计编码的HTML标签属性名
-
+     commonData: true,
+     excludeType: [Stat.TYPE.view],
     'key1': {
         data: function (node) { // 通过函数定义编码为key1的统计对象需要携带的数据
             return {
@@ -75,7 +76,7 @@ Stat.config({
     },
 
     sendBy: { // 设置统计请求的发送方式，默认为ajax,还支持image、script
-        type: 'ajax',
+        type: Stat.SEND_TYPE.script,
         url: '//some-domain.com/some-path';
         
     }
@@ -143,6 +144,26 @@ Stat.forceAllViewStat();
 
 ```js
 Stat.forceAllLoadStat();
+```
+
+#### 其他
+```js
+export var TYPE = {
+  click: 'click',
+  view: 'view',
+  load: 'load'
+}
+
+export var SEND_TYPE = {
+  ajax: 'ajaxGet',
+  script: 'loadScript',
+  image: 'loadImage'
+}
+
+initClick()
+initLoad()
+initView()
+
 ```
 
 ## 可能发生的问题

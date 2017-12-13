@@ -316,14 +316,24 @@ var Util = {
   throttle
 };
 
+var TYPE = {
+  click: 'click',
+  view: 'view',
+  load: 'load'
+};
+
+var SEND_TYPE = {
+  ajax: 'ajaxGet',
+  script: 'loadScript',
+  image: 'loadImage'
+};
+
 var CONF = {
   commonData: false,
   throttleForView: 100,
-  typeEnum: {
-    'click': true,
-    'view': true,
-    'load': true
-  },
+  eventToType: {},
+  typeEnum: {},
+  excludeType: [],
   typeAttrPrefix: 'stat-',
   defaultCodeAttr: 'stat-code',
   defaultDataAttr: 'stat-data',
@@ -332,20 +342,42 @@ var CONF = {
   defaultCodeParamInUrl: 'stat_code',
   defaultDataParamInUrl: 'stat_data',
   sendBy: {
-    type: 'ajax',
+    type: SEND_TYPE.ajax,
     url: '/',
     argsStr: queryStringifyObject
   },
   codeOptions: {}
 };
-(function () {
-  CONF.eventToType = {};
-  CONF.typeAttrEnum = {};
-  Util.each(CONF.typeEnum, function (v, p) {
-    CONF.eventToType[p] = CONF.typeAttrPrefix + p;
-    CONF.typeAttrEnum[CONF.typeAttrPrefix + p] = v;
+
+/**
+ * [description]
+ * @param  {Object} conf [description]
+ * @return {[type]}      [description]
+ */
+var config = function (conf) {
+  if (!Util.isObject(conf)) return false
+  Util.each(conf, function (v, k) {
+    if (CONF.hasOwnProperty(k)) {
+      if (!Util.isObject(CONF[k])) {
+        CONF[k] = v;
+      } else {
+        Util.extend(CONF[k], v);
+      }
+    } else {
+      CONF.codeOptions[k] = v;
+    }
   });
-})();
+  Util.each(TYPE, function (v, k) {
+    var attrName = CONF.typeAttrPrefix + v;
+    CONF.eventToType[v] = attrName;
+    CONF.typeEnum[v] = true;
+    if (CONF.excludeType.indexOf(v) !== -1) {
+      CONF.typeEnum[v] = false;
+    }
+  });
+};
+
+config();
 
 /**
  * [parseDataFromString description]
@@ -380,8 +412,8 @@ function queryParamStringifyData (data) {
  */
 function queryStringifyObject (obj) {
   var r = [];
-  Util.each(obj, function (v, p) {
-    r.push(queryParamStringifyData(p) + '=' + queryParamStringifyData(v));
+  Util.each(obj, function (v, k) {
+    r.push(queryParamStringifyData(k) + '=' + queryParamStringifyData(v));
   });
   return r.join('&')
 }
@@ -469,57 +501,44 @@ var getUrlData = function (type, elOrObj) {
 };
 
 var xhttp;
-
-function ajax (url, callback) {
-  if (!xhttp) {
-    xhttp = new XMLHttpRequest();
-  }
-  xhttp.onerror = xhttp.onload = function () {
-    callback && callback();
-  };
-  xhttp.open('GET', url);
-  xhttp.send();
-}
-
-/**
- * [loadScript description]
- * @param  {String}   url      [description]
- * @param  {Function} callback [description]
- * @return {[type]}            [description]
- */
-function loadScript (url, callback) {
-  var statScriptEl = document.createElement('script');
-  var $script = $(statScriptEl);
-  $('head').append($script);
-  $script.attr('type', 'text/javascript');
-  $script.attr('src', url);
-  statScriptEl.onerror = statScriptEl.onload = function () {
-    callback && callback();
-    var url = CONF.sendBy.url;
-    if (Util.isFunction(url)) url = url();
-    var $scriptOld = $('script[src^="' + url + '"]');
-    if ($scriptOld) {
-      $scriptOld.remove();
-      $scriptOld = null;
-    }
-  };
-}
-
 var imgElement;
-
-/**
- * [loadImage description]
- * @param  {String}   url      [description]
- * @param  {Function} callback [description]
- * @return {[type]}            [description]
- */
-function loadImage (url, callback) {
-  if (!imgElement) imgElement = new Image();
-  imgElement.src = url;
-  imgElement.onerror = imgElement.onload = function () {
-    callback && callback();
-  };
-}
+var sendFunc;
+sendFunc = {
+  ajaxGet: function (url, callback) {
+    if (!xhttp) {
+      xhttp = new XMLHttpRequest();
+    }
+    xhttp.onerror = xhttp.onload = function () {
+      callback && callback();
+    };
+    xhttp.open('GET', url);
+    xhttp.send();
+  },
+  loadImage: function loadImage (url, callback) {
+    if (!imgElement) imgElement = new Image();
+    imgElement.src = url;
+    imgElement.onerror = imgElement.onload = function () {
+      callback && callback();
+    };
+  },
+  loadScript: function (url, callback) {
+    var statScriptEl = document.createElement('script');
+    var $script = $(statScriptEl);
+    $('head').append($script);
+    $script.attr('type', 'text/javascript');
+    $script.attr('src', url);
+    statScriptEl.onerror = statScriptEl.onload = function () {
+      callback && callback();
+      var url = CONF.sendBy.url;
+      if (Util.isFunction(url)) url = url();
+      var $scriptOld = $('script[src^="' + url + '"]');
+      if ($scriptOld) {
+        $scriptOld.remove();
+        $scriptOld = null;
+      }
+    };
+  }
+};
 
 /**
  * [description]
@@ -535,34 +554,8 @@ var send = function (type, target, callback) {
   if (Util.isFunction(url)) url = url();
   if (!Util.isString(url)) return false
   url += '?' + CONF.sendBy.argsStr(getUrlData(type, target));
-  switch (CONF.sendBy.type) {
-    case 'ajax':
-      ajax(url, callback);
-      break
-    case 'script':
-      loadScript(url, callback);
-      break
-    case 'image':
-    default:
-      loadImage(url, callback);
-  }
+  sendFunc[CONF.sendBy.type](url, callback);
   console.log(url);
-};
-
-/**
- * [description]
- * @param  {Object} conf [description]
- * @return {[type]}      [description]
- */
-var config = function (conf) {
-  if (!Util.isObject(conf)) return false
-  Util.each(conf, function (v, p) {
-    if (CONF.hasOwnProperty(p)) {
-      CONF[p] = (Util.isBasic(v) || Util.isBasic(CONF[p])) ? v : Util.extend(CONF[p], v);
-    } else {
-      CONF.codeOptions[p] = v;
-    }
-  });
 };
 
 /**
@@ -579,8 +572,8 @@ function bindDataToNode (el, data) {
       $(el).attr(CONF.defaultCodeAttr, data.code);
       data = data.data;
     }
-    Util.each(data, function (v, p) {
-      $(el).attr(CONF.defaultDataAttr + '-' + p, v == null ? ''
+    Util.each(data, function (v, k) {
+      $(el).attr(CONF.defaultDataAttr + '-' + k, v == null ? ''
         : (Util.isBasic(v) ? String(v) : JSON.stringify(v)));
     });
   }
@@ -589,42 +582,43 @@ function bindDataToNode (el, data) {
 /**
  * [description]
  * @param  {Node} el                  [description]
- * @param  {String|Array|Object} type [description]
- * @param  {Object|Undefined} obj     [description]
- * @return {[type]}                   [description]
+ * @param  {String|Array|Undefined} type [description]
+ * @param  {Object|Undefined} data     [description]
  */
-var bind = function (el, type, obj) {
-  if (Util.isObject(obj)) bindDataToNode(el, obj);
-  if (Util.isObject(type)) {
-    bindDataToNode(el, type);
-  } else if (Util.isString(type)) {
-    if (type === 'all') {
-      Util.each(CONF.typeEnum, function (v, p) {
-        bind(el, p);
-      });
-    } else if (CONF.typeEnum[type]) {
-      $(el).attr(CONF.eventToType[type], '');
-    }
-  } else if (Util.isArray(type)) {
+var bind = function (el, type, data) {
+
+  if (Util.isObject(data)) bindDataToNode(el, data);
+
+  if (Util.isArray(type)) {
     Util.each(type, function (v) {
-      bind(el, v);
+      if (CONF.typeEnum[v]) bind(el, v);
+    });
+  } else if (Util.isString(type) && CONF.typeEnum[type]) {
+    $(el).attr(CONF.eventToType[type], '');
+  } else {
+    Util.each(CONF.typeEnum, function (v, k) {
+      bind(el, k);
     });
   }
+
 };
 
 /**
  * [description]
  * @param  {Node} el               [description]
- * @param  {String|Undefined} type [description]
- * @return {[type]}                [description]
+ * @param  {String|Array|Undefined} type [description]
  */
 var unbind = function (el, type) {
-  if (!type || type === 'all') {
-    Util.each(CONF.typeEnum, function (v, p) {
-      unbind(el, p);
-    });
-  } else if (CONF.typeEnum[type]) {
+  if (Util.isString(type) && CONF.typeEnum[type]) {
     $(el).removeAttr(CONF.eventToType[type]);
+  } else if (Util.isArray(type)) {
+    Util.each(type, function (v) {
+      if (CONF.typeEnum[v]) unbind(el, v);
+    });
+  } else {
+    Util.each(CONF.typeEnum, function (v, k) {
+      unbind(el, k);
+    });
   }
 };
 
@@ -684,29 +678,27 @@ function historyEndsWithWholeInView (list) {
 }
 
 var forceAllViewStat = Util.throttle(function () {
-    $('[' + CONF.eventToType['view'] + ']').each(function (i, el) {
+    $('[' + CONF.eventToType[TYPE.view] + ']').each(function (i, el) {
       var $el = $(el);
       var once = true;
       var whole = false;
 
-      determine_once_and_whole: {
-        var onceAttr = $el.attr(CONF.eventToType['view'] + '-once');
-        if (String(onceAttr) === 'false') {
+      var onceAttr = $el.attr(CONF.eventToType[TYPE.view] + '-once');
+      if (String(onceAttr) === 'false') {
+        once = false;
+      }
+      var wholeAttr = $el.attr(CONF.eventToType[TYPE.view] + '-whole');
+      if (wholeAttr != null && String(wholeAttr) !== 'false') {
+        whole = true;
+      }
+
+      var code = $el.attr(CONF.defaultCodeAttr);
+      if (CONF.codeOptions[code] && CONF.codeOptions[code].view) {
+        if (CONF.codeOptions[code].view.once === false) {
           once = false;
         }
-        var wholeAttr = $el.attr(CONF.eventToType['view'] + '-whole');
-        if (wholeAttr != null && String(wholeAttr) !== 'false') {
+        if (CONF.codeOptions[code].view.whole === true) {
           whole = true;
-        }
-
-        var code = $el.attr(CONF.defaultCodeAttr);
-        if (CONF.codeOptions[code] && CONF.codeOptions[code].view) {
-          if (CONF.codeOptions[code].view.once === false) {
-            once = false;
-          }
-          if (CONF.codeOptions[code].view.whole === true) {
-            whole = true;
-          }
         }
       }
 
@@ -719,8 +711,8 @@ var forceAllViewStat = Util.throttle(function () {
           if ($el.data('stat-view-status')) return
           $el.data('stat-view-status', true);
         }
-        send('view', el);
-        once && $el.removeAttr(CONF.eventToType['view']);
+        send(TYPE.view, el);
+        once && $el.removeAttr(CONF.eventToType[TYPE.view]);
       } else {
         if (!$el.data('stat-view-status')) {
           $el.data('stat-view-status', []);
@@ -729,8 +721,8 @@ var forceAllViewStat = Util.throttle(function () {
         if (statusHistory[statusHistory.length - 1] === judge) return
         statusHistory.push(judge);
         if (historyEndsWithWholeInView(statusHistory)) {
-          send('view', el);
-          once && $el.removeAttr(CONF.eventToType['view']);
+          send(TYPE.view, el);
+          once && $el.removeAttr(CONF.eventToType[TYPE.view]);
         }
       }
     });
@@ -739,41 +731,75 @@ var forceAllViewStat = Util.throttle(function () {
 );
 
 var forceAllLoadStat = function () {
-  var $load = $('[' + CONF.eventToType['load'] + ']');
+  var $load = $('[' + CONF.eventToType[TYPE.load] + ']');
   if ($load.length) {
     $load.each(function (i, el) {
-      send('load', el, function () {
-        $(el).removeAttr(CONF.eventToType['load']);
+      send(TYPE.load, el, function () {
+        $(el).removeAttr(CONF.eventToType[TYPE.load]);
       });
     });
+  }
+};
+
+// stat_click
+var initClick = function () {
+  if (CONF.typeEnum[TYPE.click]) {
+    $('body').on(TYPE.click, '[' + CONF.eventToType[TYPE.click] + ']', function (e) {
+      send(TYPE.click, this);
+    });
+  }
+};
+
+// stat_load
+var initLoad = function () {
+  if (CONF.typeEnum[TYPE.load]) {
+    forceAllLoadStat();
+  }
+};
+
+// stat_view
+var initView = function () {
+  if (CONF.typeEnum[TYPE.view]) {
+    forceAllViewStat();
+    $(window).on('scroll', forceAllViewStat);
   }
 };
 
 var init = function (conf) {
   config(conf);
 
-  // stat_click
-  $('body').on('click', '[' + CONF.eventToType['click'] + ']', function (e) {
-    send('click', this);
-  });
-
-  // stat_load
-  forceAllLoadStat();
-
-  // stat_view
-  forceAllViewStat();
-  $(window).on('scroll', forceAllViewStat);
+  initClick();
+  initLoad();
+  initView();
 };
 
-var index = {init, config, bind, unbind, check, send, forceAllViewStat, forceAllLoadStat};
+var index = {
+  TYPE,
+  init,
+  initClick,
+  initLoad,
+  initView,
+  config,
+  bind,
+  unbind,
+  check,
+  send,
+  forceAllViewStat,
+  forceAllLoadStat
+};
 
-exports.send = send;
+exports.TYPE = TYPE;
+exports.SEND_TYPE = SEND_TYPE;
 exports.config = config;
+exports.send = send;
 exports.bind = bind;
 exports.unbind = unbind;
 exports.check = check;
 exports.forceAllViewStat = forceAllViewStat;
 exports.forceAllLoadStat = forceAllLoadStat;
+exports.initClick = initClick;
+exports.initLoad = initLoad;
+exports.initView = initView;
 exports.init = init;
 exports['default'] = index;
 
