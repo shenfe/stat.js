@@ -332,8 +332,8 @@ var CONF = {
   typeAttrPrefix: 'stat-',
   defaultCodeAttr: 'stat-code',
   defaultDataAttr: 'stat-data',
-  defaultTimestampParamInUrl: 'stat_common_data_timestamp',
-  defaultTypeParamInUrl: 'stat_common_data_type',
+  defaultTimestampParamInUrl: 'stat_timestamp',
+  defaultTypeParamInUrl: 'stat_type',
   defaultCodeParamInUrl: 'stat_code',
   defaultDataParamInUrl: 'stat_data',
   sendBy: {
