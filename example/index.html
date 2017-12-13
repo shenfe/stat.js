@@ -37,44 +37,41 @@
         <script src="../dist/stat.js" charset="utf-8"></script>
 
         <script type="text/javascript">
-            Stat.config({
-                /* The default attribute that stores the statistic (stat, for short) data */
-                defaultDataAttr: 'stat-data',
-                /* The default attribute that stores the stat code which represents a unique stat object */
-                defaultCodeAttr: 'stat-code',
-
-                /* Each stat code and its options */
-                'key1': {
-                    data: function (node) {
-                        return {
-                            url: node.getAttribute('href')
-                        };
-                    }
-                },
-                'key2': {
-                    view: {
-                        once: true, /* If one time is enough */
-                        whole: false /* If the whole area should be viewed */
-                    }
-                },
-                'key4': {
-                    view: {
-                        whole: true
-                    }
-                },
-
-                /* Specify the way to send stat requests */
-                sendBy: {
-                    type: 'script',
-                    url: function () {
-                        return 'http://pb.sogou.com/pv.gif';
-                    }
-                }
-            });
-        </script>
-
-        <script type="text/javascript">
             window.onload = function () {
+
+                Stat.init({
+                    /* The default attribute that stores the statistic (stat, for short) data */
+                    defaultDataAttr: 'stat-data',
+                    /* The default attribute that stores the stat code which represents a unique stat object */
+                    defaultCodeAttr: 'stat-code',
+    
+                    /* Each stat code and its options */
+                    'key1': {
+                        data: function (node) {
+                            return {
+                                url: node.getAttribute('href')
+                            };
+                        }
+                    },
+                    'key2': {
+                        view: {
+                            once: true, /* If one time is enough */
+                            whole: false /* If the whole area should be viewed */
+                        }
+                    },
+                    'key4': {
+                        view: {
+                            whole: true
+                        }
+                    },
+    
+                    /* Specify the way to send stat requests */
+                    sendBy: {
+                        type: 'script',
+                        url: 'http://pb.sogou.com/pv.gif'
+                    }
+                });
+
                 var $target1 = document.getElementById('test1');
 
                 Stat.bind($target1, 'click', {
