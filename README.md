@@ -30,35 +30,25 @@ import * as Stat from 'data-stat-fe/dist/stat'
 
 ```
 
-### HTML标签属性形式声明
-
-支持三种行为统计：点击、曝光、加载，对应以下示例中`data-stat-click`、`data-stat-view`、`data-stat-load`属性。点击，指元素被click一次则发送一个请求。曝光，指元素进入可见范围时发送一个请求，可选择是否仅统计一次，可选择是否元素全部进入可见范围才算作曝光。加载，指元素在页面中加载时发送一个请求。
-
-需要为统计对象定义编码，例如“首页feed流中的项”的统计编码为key1。统计编码在HTML标签中的属性名可自定义，以下示例中为`data-stat-code`。
-
-可以为统计对象通过HTML标签属性的方式指定统计请求所要携带的统计数据。统计数据在HTML标签中的属性名可自定义，以下示例中为`data-stat-data`。如果使用`data-stat-data`定义统计数据，则属性值最好是JSON字符串。也可以通过`data-stat-data-paramname="paramvalue"`的方式定义统计数据，如以下示例中的`data-stat-data-name`。
-
-```html
-<a data-stat-click data-stat-code="key1" data-stat-data='{"name":"a1"}' href="javascript:void(0);">click this</a>
-<div data-stat-view data-stat-code="key2" data-stat-data='{"name":"div1"}'>view this</div>
-<div data-stat-view data-stat-code="key2" data-stat-data-name="div2" style="position:absolute;top:2000px;left:0px;">view this</div>
-<div data-stat-view data-stat-code="key4" data-stat-data-name="div3" data-stat-view-once="false" style="position:absolute;top:2100px;left:0px;">view this</div>
-<a data-stat-click data-stat-view data-stat-load data-stat-code="key3" data-stat-data-name="a2" href="javascript:void(0);">click or view this</a>
-```
-
-### JavaScript API调用
-
-#### init
-```js
-Stat.init(config)
-```
-
-#### config配置 
+### config配置 
 
     默认不给url上面挂载公共数据，比如type，timestamp，可以配置commonData为true开启，
     可以用excludeType排除不需要初始化监听元素属性的类型，如果只用命令式，不用声明式，可以全部排除，即不初始化
 
 ```js
+
+export var TYPE = {
+  click: 'click',
+  view: 'view',
+  load: 'load'
+}
+
+export var SEND_TYPE = {
+  ajax: 'ajaxGet',
+  script: 'loadScript',
+  image: 'loadImage'
+}
+
 Stat.config({
     defaultDataAttr: 'data-stat-data', // 统计数据的HTML标签属性名
     defaultCodeAttr: 'data-stat-code', // 统计编码的HTML标签属性名
@@ -86,6 +76,78 @@ Stat.config({
 });
 ```
 
+### 命令式埋点
+
+#### 命令式相关API
+
+##### send
+
+发送统计请求。
+
+```js
+Stat.send(Stat.TYPE.view, {
+    code: 'key1',
+    data: {
+        name: 'a1'
+    }
+});
+```
+
+##### isInView
+
+是否在显示区域
+
+```js
+Stat.isInView(el,whole);
+```
+
+### 声明式埋点 
+
+#### HTML标签属性形式声明
+
+    支持三种行为统计：点击、曝光、加载，对应以下示例中`data-stat-click`、`data-stat-view`、`data-stat-load`属性。点击，指元素被click一次则发送一个请求。曝光，指元素进入可见范围时发送一个请求，可选择是否仅统计一次，可选择是否元素全部进入可见范围才算作曝光。加载，指元素在页面中加载时发送一个请求。
+
+    需要为统计对象定义编码，例如“首页feed流中的项”的统计编码为key1。统计编码在HTML标签中的属性名可自定义，以下示例中为`data-stat-code`。
+
+    `data-stat-code`专门为声明式统计使用扩展配置，类似多核即多个实例对象，每个实例有自己的init配置。
+
+    可以为统计对象通过HTML标签属性的方式指定统计请求所要携带的统计数据。统计数据在HTML标签中的属性名可自定义，以下示例中为`data-stat-data`。如果使用`data-stat-data`定义统计数据，则属性值最好是JSON字符串。也可以通过`data-stat-data-paramname="paramvalue"`的方式定义统计数据，如以下示例中的`data-stat-data-name`。
+
+```html
+<a data-stat-click data-stat-code="key1" data-stat-data='{"name":"a1"}' href="javascript:void(0);">click this</a>
+<div data-stat-view data-stat-code="key2" data-stat-data='{"name":"div1"}'>view this</div>
+<div data-stat-view data-stat-code="key2" data-stat-data-name="div2" style="position:absolute;top:2000px;left:0px;">view this</div>
+<div data-stat-view data-stat-code="key4" data-stat-data-name="div3" data-stat-view-once="false" style="position:absolute;top:2100px;left:0px;">view this</div>
+<a data-stat-click data-stat-view data-stat-load data-stat-code="key3" data-stat-data-name="a2" href="javascript:void(0);">click or view this</a>
+```
+
+#### 声明式相关API
+
+##### 声明式初始化
+```js
+Stat.init(config)
+
+initClick()
+initLoad()
+initView()
+
+```
+
+##### forceAllViewStat
+
+强制检查所有需要曝光统计的元素，一般用于动态改变html元素的情况。
+
+```js
+Stat.forceAllViewStat();
+```
+
+##### forceAllLoadStat
+
+强制检查所有需要load统计的元素，一般用于动态改变html元素的情况。
+
+```js
+Stat.forceAllLoadStat();
+```
 #### bind
 
 绑定。
@@ -119,55 +181,6 @@ bindingStatus.click && console.log('Target element has bound click-type stat.');
 Stat.unbind($target, 'click');
 ```
 
-#### send
-
-发送统计请求。
-
-```js
-Stat.send('view', $target);
-Stat.send('view', {
-    code: 'key1',
-    data: {
-        name: 'a1'
-    }
-});
-```
-
-#### forceAllViewStat
-
-强制检查所有需要曝光统计的元素，一般用于动态改变html元素的情况。
-
-```js
-Stat.forceAllViewStat();
-```
-
-#### forceAllLoadStat
-
-强制检查所有需要load统计的元素，一般用于动态改变html元素的情况。
-
-```js
-Stat.forceAllLoadStat();
-```
-
-#### 其他
-```js
-export var TYPE = {
-  click: 'click',
-  view: 'view',
-  load: 'load'
-}
-
-export var SEND_TYPE = {
-  ajax: 'ajaxGet',
-  script: 'loadScript',
-  image: 'loadImage'
-}
-
-initClick()
-initLoad()
-initView()
-
-```
 
 ## 可能发生的问题
 

@@ -322,7 +322,7 @@ export var check = function (el) {
   return r
 }
 
-function isInView (el, whole) {
+export var isInView = function  (el, whole) {
   if ($(el).is(':hidden')) return false
 
   var eTop = $(el).offset().top
@@ -466,15 +466,16 @@ export var init = function (conf) {
 
 export default {
   TYPE,
+  config,
+  send,
+  isInView,
+  bind,
+  unbind,
+  check,
   init,
   initClick,
   initLoad,
   initView,
-  config,
-  bind,
-  unbind,
-  check,
-  send,
   forceAllViewStat,
   forceAllLoadStat
 }
