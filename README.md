@@ -53,7 +53,10 @@ import * as Stat from 'data-stat-fe/dist/stat'
 Stat.init(config)
 ```
 
-#### config配置 默认不给url上面挂载公共数据，比如type，timestamp，可以配置commonData为true开启，可以用excludeType排除不需要初始化监听的类型
+#### config配置 
+
+    默认不给url上面挂载公共数据，比如type，timestamp，可以配置commonData为true开启，
+    可以用excludeType排除不需要初始化监听元素属性的类型，如果只用命令式，不用声明式，可以全部排除，即不初始化
 
 ```js
 Stat.config({

@@ -426,7 +426,9 @@ export var forceAllLoadStat = function () {
   }
 }
 
-// stat_click
+/**
+ * data-stat-click
+ */
 export var initClick = function () {
   if (CONF.typeEnum[TYPE.click]) {
     $('body').on(TYPE.click, '[' + CONF.eventToType[TYPE.click] + ']', function (e) {
@@ -435,14 +437,18 @@ export var initClick = function () {
   }
 }
 
-// stat_load
+/**
+ * data-stat-load
+ */
 export var initLoad = function () {
   if (CONF.typeEnum[TYPE.load]) {
     forceAllLoadStat()
   }
 }
 
-// stat_view
+/**
+ * data-stat-view
+ */
 export var initView = function () {
   if (CONF.typeEnum[TYPE.view]) {
     forceAllViewStat()
