@@ -102,6 +102,7 @@ function queryStringifyObject(obj) {
  * @return {[type]}            [description]
  */
 function loadScript(url, callback) {
+    var parent = document.getElementsByTagName('head')[0] || document.body;
     var script = document.createElement('script');
     script.type = 'text/javascript';
     if (script.readyState) { // IE
@@ -109,15 +110,19 @@ function loadScript(url, callback) {
             if (script.readyState === 'loaded' || script.readyState === 'complete') {
                 script.onreadystatechange = null;
                 callback && callback();
+                parent.removeChild(script);
+                script = null;
+                parent = null;
             }
         };
     } else {
         script.onload = function () {
             callback && callback();
+            parent.removeChild(script);
         };
     }
     script.src = url;
-    (document.getElementsByTagName('head')[0] || document.body).appendChild(script);
+    parent.appendChild(script);
 }
 
 /**
@@ -400,13 +405,13 @@ var init = function () {
     }
 
     stat_load: {
-        function sendAllLoadStat() {
+        var sendAllLoadStat = function () {
             $('[' + CONF.eventToType['load'] + ']').each(function (i, el) {
                 send('load', el, function () {
                     $(el).removeAttr(CONF.eventToType['load']);
                 });
             });
-        }
+        };
         sendAllLoadStat();
         CONF.loopForLoad && window.setInterval(
             sendAllLoadStat,
