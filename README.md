@@ -143,4 +143,6 @@ npm run build:zepto-out     # 不包含Zepto
 
 ## License
 
-MIT
+[MIT](http://opensource.org/licenses/MIT)
+
+Copyright (c) 2017-present, [shenfe](https://github.com/shenfe)
