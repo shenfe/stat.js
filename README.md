@@ -143,7 +143,7 @@ npm run build:zepto-out     # 不包含Zepto
 
 ## TODO
 
-[] 区域停留时间
+* [x] 区域停留时间
 
 ## License
 
