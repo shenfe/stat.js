@@ -141,6 +141,10 @@ npm run build:zepto-in      # 包含Zepto
 npm run build:zepto-out     # 不包含Zepto
 ```
 
+## TODO
+
+[] 区域停留时间
+
 ## License
 
 [MIT](http://opensource.org/licenses/MIT)
