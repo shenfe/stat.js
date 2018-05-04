@@ -25,7 +25,7 @@ var isFunction = function (v) {
 };
 
 var isObject = function (v) {
-    return Object.prototype.toString.call(v) === '[object Object]';
+    return v != null && Object.prototype.toString.call(v) === '[object Object]';
 };
 
 var isArray = function (v) {
@@ -92,7 +92,7 @@ var each = function (v, func, arrayReverse) {
             var r = func(v[i]['nodeValue'], v[i]['nodeName']);
             if (r === false) break;
         }
-    } else if (Util.isFunction(v.forEach)) {
+    } else if (isFunction(v.forEach)) {
         v.forEach(func);
     }
 };
@@ -163,6 +163,7 @@ var extend = function (dest, srcs, clean) {
     if (!isObject(dest)) return null;
     var args = Array.prototype.slice.call(arguments, 1,
         arguments[arguments.length - 1] === true ? (arguments.length - 1) : arguments.length);
+    clean = arguments[arguments.length - 1] === true ? true : false;
 
     function extendObj(obj, src, clean) {
         if (!isObject(src)) return;
@@ -329,6 +330,7 @@ function queryStringifyObject(obj) {
  * @return {[type]}            [description]
  */
 function loadScript(url, callback) {
+    var parent = document.getElementsByTagName('head')[0] || document.body;
     var script = document.createElement('script');
     script.type = 'text/javascript';
     if (script.readyState) { // IE
@@ -336,15 +338,19 @@ function loadScript(url, callback) {
             if (script.readyState === 'loaded' || script.readyState === 'complete') {
                 script.onreadystatechange = null;
                 callback && callback();
+                parent.removeChild(script);
+                script = null;
+                parent = null;
             }
         };
     } else {
         script.onload = function () {
             callback && callback();
+            parent.removeChild(script);
         };
     }
     script.src = url;
-    (document.getElementsByTagName('head')[0] || document.body).appendChild(script);
+    parent.appendChild(script);
 }
 
 /**
@@ -526,6 +532,8 @@ var send = function (type, target, callback) {
 };
 
 function isInView(el, whole) {
+    if ($(el).is(':hidden')) return false;
+    
     var eTop = $(el).offset().top;
     var eBottom = $(el).height() + eTop;
     var wTop = $(window).scrollTop();
@@ -620,18 +628,36 @@ var forceAllViewStat = throttle(function () {
 var init = function () {
     stat_click: {
         $('body').on('click', '[' + CONF.eventToType['click'] + ']', function (e) {
-            send('click', this);
+            var callback;
+            var ohref;
+            if (this.nodeName.toLowerCase() === 'a') {
+                if (this.protocol !== 'javascript:') {
+                    ohref = this.href;
+                    this.setAttribute('data-href', ohref);
+                    this.href = 'javascript:void(0);';
+                } else if (this.hasAttribute('data-href')) {
+                    ohref = this.getAttribute('data-href');
+                }
+                if (ohref) {
+                    callback = function () {
+                        setTimeout(function () {
+                            location.href = ohref;
+                        }, 2000);
+                    };
+                }
+            }
+            send('click', this, callback);
         });
     }
 
     stat_load: {
-        function sendAllLoadStat() {
+        var sendAllLoadStat = function () {
             $('[' + CONF.eventToType['load'] + ']').each(function (i, el) {
                 send('load', el, function () {
                     $(el).removeAttr(CONF.eventToType['load']);
                 });
             });
-        }
+        };
         sendAllLoadStat();
         CONF.loopForLoad && window.setInterval(
             sendAllLoadStat,

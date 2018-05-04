@@ -400,7 +400,23 @@ var forceAllViewStat = Util.throttle(function () {
 var init = function () {
     stat_click: {
         $('body').on('click', '[' + CONF.eventToType['click'] + ']', function (e) {
-            send('click', this);
+            var callback;
+            var ohref;
+            if (this.nodeName.toLowerCase() === 'a') {
+                if (this.protocol !== 'javascript:') {
+                    ohref = this.href;
+                    this.setAttribute('data-href', ohref);
+                    this.href = 'javascript:void(0);';
+                } else if (this.hasAttribute('data-href')) {
+                    ohref = this.getAttribute('data-href');
+                }
+                if (ohref) {
+                    callback = function () {
+                        location.href = ohref;
+                    };
+                }
+            }
+            send('click', this, callback);
         });
     }
 
