@@ -376,6 +376,7 @@ var CONF = {
     typeAttrPrefix: 'stat-',
     defaultCodeAttr: 'stat-code',
     defaultDataAttr: 'stat-data',
+    redirectionAttr: 'stat-redirect',
     defaultTypeParamInUrl: 'stat_type',
     defaultCodeParamInUrl: 'stat_code',
     defaultDataParamInUrl: 'stat_data',
@@ -630,7 +631,7 @@ var init = function () {
         $('body').on('click', '[' + CONF.eventToType['click'] + ']', function (e) {
             var callback;
             var ohref;
-            if (this.nodeName.toLowerCase() === 'a') {
+            if (this.nodeName.toLowerCase() === 'a' && this.hasAttribute(CONF.redirectionAttr)) {
                 if (this.protocol !== 'javascript:') {
                     ohref = this.href;
                     this.setAttribute('data-href', ohref);
@@ -640,9 +641,7 @@ var init = function () {
                 }
                 if (ohref) {
                     callback = function () {
-                        setTimeout(function () {
-                            location.href = ohref;
-                        }, 2000);
+                        location.href = ohref;
                     };
                 }
             }
