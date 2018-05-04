@@ -402,8 +402,8 @@ var init = function () {
     stat_click: {
         $('body').on('click', '[' + CONF.eventToType['click'] + ']', function (e) {
             var callback;
-            var ohref;
             if (this.nodeName.toLowerCase() === 'a' && this.hasAttribute(CONF.redirectionAttr)) {
+                var ohref;
                 if (this.protocol !== 'javascript:') {
                     ohref = this.href;
                     this.setAttribute('data-href', ohref);
